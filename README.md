@@ -1,2 +1,5 @@
-# template
-DEV template for any future TEKSI module
+# TEKSI Management Module Tool (TMMT)
+
+Here should come the future management tool for TEKSI Modules
+
+This tool will be able to ease the installation and upgrade of any TEKSI module
