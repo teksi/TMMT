@@ -1,4 +1,4 @@
-# TEKSI Management Module Tool (TMMT)
+# TEKSI Module Management Tool (TMMT)
 
 Here should come the future management tool for TEKSI Modules
 
