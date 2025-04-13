@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
  TMMTPlugin
@@ -22,17 +21,11 @@
  ***************************************************************************/
 """
 
-import logging
-import os
-
-from qgis.core import Qgis, QgsApplication
-from qgis.PyQt.QtCore import QLocale, QSettings, Qt
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QApplication, QMessageBox, QToolBar
-from qgis.utils import qgsfunction
-
+from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from .gui.tmmt_dialog import TMMTPluginDialog
+from .utils.plugin_utils import PluginUtils
 
 
 class TMMTPlugin:
@@ -53,10 +46,10 @@ class TMMTPlugin:
         self.iface = iface
         self.canvas = iface.mapCanvas()
 
-        #self.initLogger()
+        # self.initLogger()
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&TEKSI Module Management Tool (TMMT)')
+        self.menu = self.tr("&TEKSI Module Management Tool (TMMT)")
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -71,8 +64,8 @@ class TMMTPlugin:
         :return: The translated text
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QApplication.translate('TMMTPlugin', source_text)
-    
+        return QApplication.translate("TMMTPlugin", source_text)
+
     def add_action(
         self,
         icon_path,
@@ -83,7 +76,8 @@ class TMMTPlugin:
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
-        parent=None):
+        parent=None,
+    ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -139,9 +133,7 @@ class TMMTPlugin:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToDatabaseMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToDatabaseMenu(self.menu, action)
 
         self.actions.append(action)
 
@@ -150,32 +142,28 @@ class TMMTPlugin:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/teksi_module_management_tool_plugin/icon.png'
+        icon_path = PluginUtils.get_plugin_icon("tmmt-logo.png")
         self.add_action(
-            icon_path,
-            text=self.tr(u'TMMT'),
-            callback=self.run,
-            parent=self.iface.mainWindow())
+            icon_path, text=self.tr("TMMT"), callback=self.run, parent=self.iface.mainWindow()
+        )
 
         # will be set False in run()
         self.first_start = True
-
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginDatabaseMenu(
-                self.tr(u'&TEKSI Module Management Tool (TMMT)'),
-                action)
+                self.tr("&TEKSI Module Management Tool (TMMT)"), action
+            )
             self.iface.removeToolBarIcon(action)
-
 
     def run(self):
         """Run method that performs all the real work"""
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
+        if self.first_start is True:
             self.first_start = False
             self.dlg = TMMTPluginDialog()
 
