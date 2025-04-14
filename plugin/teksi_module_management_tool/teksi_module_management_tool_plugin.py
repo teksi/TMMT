@@ -25,7 +25,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from .gui.about_dialog import AboutDialog
-from .gui.tmmt_dialog import TMMTPluginDialog
+from .gui.main_dialog import MainDialog
 from .utils.plugin_utils import PluginUtils
 
 
@@ -167,7 +167,7 @@ class TMMTPlugin:
             self.iface.removeToolBarIcon(action)
 
     def show_main_dialog(self):
-        main_dialog = TMMTPluginDialog()
+        main_dialog = MainDialog()
         main_dialog.exec_()
 
     def show_about_dialog(self):

@@ -24,17 +24,10 @@
 from qgis.PyQt.QtWidgets import QDialog
 from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 
-# This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
-TMMT_UI = PluginUtils.get_ui_class("about_dialog.ui")
+TMMT_UI = PluginUtils.get_ui_class("main_dialog.ui")
 
 
-class TMMTPluginDialog(QDialog, TMMT_UI):
+class MainDialog(QDialog, TMMT_UI):
     def __init__(self, parent=None):
-        """Constructor."""
         super().__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
