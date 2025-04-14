@@ -24,10 +24,12 @@
 from qgis.PyQt.QtWidgets import QDialog
 from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 
-TMMT_UI = PluginUtils.get_ui_class("main_dialog.ui")
+DIALOG_UI = PluginUtils.get_ui_class("main_dialog.ui")
 
 
-class MainDialog(QDialog, TMMT_UI):
+class MainDialog(QDialog, DIALOG_UI):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        self.close_pushButton.clicked.connect(self.accept)

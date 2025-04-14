@@ -15,14 +15,14 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="6" column="1">
-    <widget class="QPushButton" name="pushButton_3">
+    <widget class="QPushButton" name="close_pushButton">
      <property name="text">
       <string>Close</string>
      </property>
     </widget>
    </item>
    <item row="6" column="0">
-    <widget class="QPushButton" name="pushButton_6">
+    <widget class="QPushButton" name="help_pushButton">
      <property name="text">
       <string>Help</string>
      </property>
@@ -222,7 +222,7 @@
            </widget>
           </item>
           <item row="1" column="2">
-           <widget class="QComboBox" name="comboBox_2">
+           <widget class="QComboBox" name="module_version_comboBox">
             <item>
              <property name="text">
               <string>1.6.3</string>
@@ -241,7 +241,7 @@
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QComboBox" name="comboBox">
+           <widget class="QComboBox" name="module_module_comboBox">
             <item>
              <property name="text">
               <string>TEKSI WW</string>
@@ -255,7 +255,7 @@
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="module_seeChangeLog_pushButton">
             <property name="text">
              <string>See changelog</string>
             </property>
@@ -269,10 +269,10 @@
            </widget>
           </item>
           <item row="2" column="2">
-           <widget class="QLineEdit" name="lineEdit_2"/>
+           <widget class="QLineEdit" name="module_fromZip_lineEdit"/>
           </item>
           <item row="2" column="3">
-           <widget class="QToolButton" name="toolButton">
+           <widget class="QToolButton" name="module_browseZip_toolButton">
             <property name="text">
              <string>...</string>
             </property>

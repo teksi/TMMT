@@ -24,6 +24,8 @@
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
+from .core.module import Module
+from .core.modules_registry import ModulesRegistry
 from .gui.about_dialog import AboutDialog
 from .gui.main_dialog import MainDialog
 from .utils.plugin_utils import PluginUtils
@@ -47,14 +49,16 @@ class TMMTPlugin:
         self.iface = iface
         self.canvas = iface.mapCanvas()
 
-        # self.initLogger()
-        # Declare instance attributes
         self.actions = []
         self.main_menu_name = self.tr("&TEKSI Module Management Tool (TMMT)")
 
-        # Check if plugin was started the first time in current QGIS session
-        # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
+        self.modules_registry = ModulesRegistry()
+        self.modules_registry.register_module(
+            Module("TEKSI Wastewater", "https://github.com/teksi/wastewater")
+        )
+        self.modules_registry.register_module(
+            Module("TEKSI District Heating", "https://github.com/teksi/district_heating")
+        )
 
     # noinspection PyMethodMayBeStatic
     def tr(self, source_text):
