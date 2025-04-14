@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # -----------------------------------------------------------
 #
 # Profile
@@ -27,10 +26,9 @@ import os
 
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtWidgets import QDialog
+from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 
-from ..utils import get_ui_class
-
-DIALOG_UI = get_ui_class("dlgabout.ui")
+DIALOG_UI = PluginUtils.get_ui_class("dlgabout.ui")
 
 
 class DlgAbout(QDialog, DIALOG_UI):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # -----------------------------------------------------------
 #
 # Profile
@@ -39,7 +38,7 @@ from qgis.core import (
     QgsNetworkAccessManager,
     QgsProject,
 )
-from qgis.PyQt.QtCore import QFile, QIODevice, QSettings, Qt, QUrl
+from qgis.PyQt.QtCore import QFile, QIODevice, Qt, QUrl
 from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 from qgis.PyQt.QtWidgets import (
     QApplication,
@@ -48,8 +47,7 @@ from qgis.PyQt.QtWidgets import (
     QProgressDialog,
     QPushButton,
 )
-
-from ..utils import get_ui_class
+from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 
 # Currently, the latest release is hard-coded in the plugin, meaning we need
 # to publish a plugin update for each datamodel update.
@@ -87,9 +85,7 @@ elif os.path.exists("~/.pg_service.conf"):
     PG_CONFIG_PATH = "~/.pg_service.conf"
 else:
     PG_CONFIG_PATH_KNOWN = False
-    PG_CONFIG_PATH = os.path.join(
-        QgsApplication.qgisSettingsDirPath(), "pg_service.conf"
-    )
+    PG_CONFIG_PATH = os.path.join(QgsApplication.qgisSettingsDirPath(), "pg_service.conf")
 
 # Derived urls/paths, may require adaptations if release structure changes
 DATAMODEL_URL_TEMPLATE = "https://github.com/teksi/wastewater/archive/{}.zip"
@@ -115,7 +111,9 @@ def tmmt_datamodel_error_catcher(func):
 class TMMTDatamodelError(Exception):
     pass
 
+
 # THIS HAS to use the new pg parser library
+
 
 class QgepPgserviceEditorDialog(QDialog, get_ui_class("qgeppgserviceeditordialog.ui")):
     def __init__(self, cur_name, cur_config, taken_names):
@@ -124,9 +122,7 @@ class QgepPgserviceEditorDialog(QDialog, get_ui_class("qgeppgserviceeditordialog
         self.taken_names = taken_names
         self.nameLineEdit.textChanged.connect(self.check_name)
         self.pgconfigUserCheckBox.toggled.connect(self.pgconfigUserLineEdit.setEnabled)
-        self.pgconfigPasswordCheckBox.toggled.connect(
-            self.pgconfigPasswordLineEdit.setEnabled
-        )
+        self.pgconfigPasswordCheckBox.toggled.connect(self.pgconfigPasswordLineEdit.setEnabled)
 
         self.nameLineEdit.setText(cur_name)
         self.pgconfigHostLineEdit.setText(cur_config.get("host", ""))
@@ -145,14 +141,10 @@ class QgepPgserviceEditorDialog(QDialog, get_ui_class("qgeppgserviceeditordialog
     def check_name(self, new_text):
         if new_text in self.taken_names:
             self.nameCheckLabel.setText("will overwrite")
-            self.nameCheckLabel.setStyleSheet(
-                "color: rgb(170, 95, 0);\nfont-weight: bold;"
-            )
+            self.nameCheckLabel.setStyleSheet("color: rgb(170, 95, 0);\nfont-weight: bold;")
         else:
             self.nameCheckLabel.setText("will be created")
-            self.nameCheckLabel.setStyleSheet(
-                "color: rgb(0, 170, 0);\nfont-weight: bold;"
-            )
+            self.nameCheckLabel.setStyleSheet("color: rgb(0, 170, 0);\nfont-weight: bold;")
 
     def conf_name(self):
         return self.nameLineEdit.text()
@@ -178,7 +170,7 @@ class QgepPgserviceEditorDialog(QDialog, get_ui_class("qgeppgserviceeditordialog
         return retval
 
 
-class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui")):
+class TMMTDatamodelInitToolDialog(QDialog, PluginUtils.get_ui_class("tmmtdatamodeldialog.ui")):
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
@@ -197,9 +189,7 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
         # Show the pgconfig path
         path_label = PG_CONFIG_PATH
         if not PG_CONFIG_PATH_KNOWN:
-            self.pgservicePathLabel.setStyleSheet(
-                "color: rgb(170, 0, 0);\nfont-style: italic;"
-            )
+            self.pgservicePathLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-style: italic;")
             path_label += f"<br/>Note: you must create a PGSYSCONFDIR variable for this configuration to work.</span>More info <a href='https://gis.stackexchange.com/a/393494'>here</a>."
             self.pgservicePathLabel.setTextFormat(Qt.RichText)
             self.pgservicePathLabel.setTextInteractionFlags(Qt.TextBrowserInteraction)
@@ -251,9 +241,7 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
 
     def _show_progress(self, message):
         if self.progress_dialog is None:
-            self.progress_dialog = QProgressDialog(
-                self.tr("Starting..."), self.tr("Cancel"), 0, 0
-            )
+            self.progress_dialog = QProgressDialog(self.tr("Starting..."), self.tr("Cancel"), 0, 0)
             cancel_button = QPushButton(self.tr("Cancel"))
             cancel_button.setEnabled(False)
             self.progress_dialog.setCancelButton(cancel_button)
@@ -417,31 +405,21 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
     # Datamodel
 
     def check_datamodel(self):
-        requirements_exists = os.path.exists(
-            REQUIREMENTS_PATH_TEMPLATE.format(self.version)
-        )
+        requirements_exists = os.path.exists(REQUIREMENTS_PATH_TEMPLATE.format(self.version))
         deltas_exists = os.path.exists(DELTAS_PATH_TEMPLATE.format(self.version))
 
         check = requirements_exists and deltas_exists
 
         if check:
             if self.version == "master":
-                self.releaseCheckLabel.setText(
-                    "DEV RELEASE - DO NOT USE FOR PRODUCTION"
-                )
-                self.releaseCheckLabel.setStyleSheet(
-                    "color: rgb(170, 0, 0);\nfont-weight: bold;"
-                )
+                self.releaseCheckLabel.setText("DEV RELEASE - DO NOT USE FOR PRODUCTION")
+                self.releaseCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
             else:
                 self.releaseCheckLabel.setText("ok")
-                self.releaseCheckLabel.setStyleSheet(
-                    "color: rgb(0, 170, 0);\nfont-weight: bold;"
-                )
+                self.releaseCheckLabel.setStyleSheet("color: rgb(0, 170, 0);\nfont-weight: bold;")
         else:
             self.releaseCheckLabel.setText("not found")
-            self.releaseCheckLabel.setStyleSheet(
-                "color: rgb(170, 0, 0);\nfont-weight: bold;"
-            )
+            self.releaseCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
 
         self.checks["datamodel"] = check
         self.enable_buttons_if_ready()
@@ -457,9 +435,7 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
             self._show_progress("Downloading the release")
 
             # Download files
-            datamodel_path = self._download(
-                AVAILABLE_RELEASES[self.version], "datamodel.zip"
-            )
+            datamodel_path = self._download(AVAILABLE_RELEASES[self.version], "datamodel.zip")
 
             # Unzip
             datamodel_zip = zipfile.ZipFile(datamodel_path)
@@ -500,16 +476,10 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
 
         if check:
             self.pythonCheckLabel.setText("ok")
-            self.pythonCheckLabel.setStyleSheet(
-                "color: rgb(0, 170, 0);\nfont-weight: bold;"
-            )
+            self.pythonCheckLabel.setStyleSheet("color: rgb(0, 170, 0);\nfont-weight: bold;")
         else:
-            self.pythonCheckLabel.setText(
-                "\n".join(f"{dep}: {err}" for dep, err in missing)
-            )
-            self.pythonCheckLabel.setStyleSheet(
-                "color: rgb(170, 0, 0);\nfont-weight: bold;"
-            )
+            self.pythonCheckLabel.setText("\n".join(f"{dep}: {err}" for dep, err in missing))
+            self.pythonCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
 
         self.checks["requirements"] = check
         self.enable_buttons_if_ready()
@@ -541,7 +511,7 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
         dependencies = " ".join(
             [
                 f'"{l.strip()}"'
-                for l in open(requirements_file_path, "r").read().splitlines()
+                for l in open(requirements_file_path).read().splitlines()
                 if l.strip()
             ]
         )
@@ -564,14 +534,10 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
         check = bool(self.pgserviceComboBox.currentData())
         if check:
             self.pgconfigCheckLabel.setText("ok")
-            self.pgconfigCheckLabel.setStyleSheet(
-                "color: rgb(0, 170, 0);\nfont-weight: bold;"
-            )
+            self.pgconfigCheckLabel.setStyleSheet("color: rgb(0, 170, 0);\nfont-weight: bold;")
         else:
             self.pgconfigCheckLabel.setText("not set")
-            self.pgconfigCheckLabel.setStyleSheet(
-                "color: rgb(170, 0, 0);\nfont-weight: bold;"
-            )
+            self.pgconfigCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
 
         self.checks["pgconfig"] = check
         self.enable_buttons_if_ready()
@@ -591,9 +557,7 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
             conf = add_dialog.conf_dict()
             self._write_pgservice_conf(name, conf)
             self.update_pgconfig_combobox()
-            self.pgserviceComboBox.setCurrentIndex(
-                self.pgserviceComboBox.findData(name)
-            )
+            self.pgserviceComboBox.setCurrentIndex(self.pgserviceComboBox.findData(name))
             self.select_pgconfig()
 
     def update_pgconfig_combobox(self):
@@ -609,9 +573,7 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
             port = config.get(self.conf, "port", fallback="-")
             dbname = config.get(self.conf, "dbname", fallback="-")
             user = config.get(self.conf, "user", fallback="-")
-            password = (
-                len(config.get(self.conf, "password", fallback="")) * "*"
-            ) or "-"
+            password = (len(config.get(self.conf, "password", fallback="")) * "*") or "-"
             self.pgserviceCurrentLabel.setText(
                 f"host: {host}:{port}\ndbname: {dbname}\nuser: {user}\npassword: {password}"
             )
@@ -653,15 +615,11 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
         pgservice = self.pgserviceComboBox.currentData()
         if not pgservice:
             self.versionCheckLabel.setText("service not selected")
-            self.versionCheckLabel.setStyleSheet(
-                "color: rgb(170, 0, 0);\nfont-weight: bold;"
-            )
+            self.versionCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
 
         elif not available_versions:
             self.versionCheckLabel.setText("no delta in datamodel")
-            self.versionCheckLabel.setStyleSheet(
-                "color: rgb(170, 0, 0);\nfont-weight: bold;"
-            )
+            self.versionCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
 
         else:
 
@@ -698,37 +656,25 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
             if not connection_works:
                 check = False
                 self.versionCheckLabel.setText(error)
-                self.versionCheckLabel.setStyleSheet(
-                    "color: rgb(170, 0, 0);\nfont-weight: bold;"
-                )
+                self.versionCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
             elif error is not None:
                 check = False
                 self.versionCheckLabel.setText(error)
-                self.versionCheckLabel.setStyleSheet(
-                    "color: rgb(170, 95, 0);\nfont-weight: bold;"
-                )
+                self.versionCheckLabel.setStyleSheet("color: rgb(170, 95, 0);\nfont-weight: bold;")
             elif current_version <= target_version:
                 check = True
                 self.versionCheckLabel.setText(current_version)
-                self.versionCheckLabel.setStyleSheet(
-                    "color: rgb(0, 170, 0);\nfont-weight: bold;"
-                )
+                self.versionCheckLabel.setStyleSheet("color: rgb(0, 170, 0);\nfont-weight: bold;")
             elif current_version > target_version:
                 check = False
                 self.versionCheckLabel.setText(f"{current_version} (cannot downgrade)")
-                self.versionCheckLabel.setStyleSheet(
-                    "color: rgb(170, 0, 0);\nfont-weight: bold;"
-                )
+                self.versionCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
             else:
                 check = False
                 self.versionCheckLabel.setText(f"{current_version} (invalid version)")
-                self.versionCheckLabel.setStyleSheet(
-                    "color: rgb(170, 0, 0);\nfont-weight: bold;"
-                )
+                self.versionCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
 
-            self.initializeButton.setVisible(
-                current_version is None and connection_works
-            )
+            self.initializeButton.setVisible(current_version is None and connection_works)
             self.targetVersionComboBox.setVisible(current_version is not None)
             self.versionUpgradeButton.setVisible(current_version is not None)
 
@@ -774,7 +720,7 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
 
                 # Dirty hack to customize SRID in a dump
                 if srid != "2056":
-                    with open(sql_path, "r") as file:
+                    with open(sql_path) as file:
                         contents = file.read()
                     contents = contents.replace("2056", srid)
                     with open(sql_path, "w") as file:
@@ -883,14 +829,10 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
 
         if check:
             self.projectCheckLabel.setText("ok")
-            self.projectCheckLabel.setStyleSheet(
-                "color: rgb(0, 170, 0);\nfont-weight: bold;"
-            )
+            self.projectCheckLabel.setStyleSheet("color: rgb(0, 170, 0);\nfont-weight: bold;")
         else:
             self.projectCheckLabel.setText("version not found")
-            self.projectCheckLabel.setStyleSheet(
-                "color: rgb(170, 0, 0);\nfont-weight: bold;"
-            )
+            self.projectCheckLabel.setStyleSheet("color: rgb(170, 0, 0);\nfont-weight: bold;")
 
         self.checks["project"] = check
         self.enable_buttons_if_ready()
@@ -911,7 +853,7 @@ class TMMTDatamodelInitToolDialog(QDialog, get_ui_class("tmmtdatamodeldialog.ui"
         qgep_zip = zipfile.ZipFile(qgep_path)
         qgep_zip.extractall(TEMP_DIR)
 
-        with open(QGEP_PROJECT_PATH_TEMPLATE, "r") as original_project:
+        with open(QGEP_PROJECT_PATH_TEMPLATE) as original_project:
             contents = original_project.read()
 
         # replace the service name
