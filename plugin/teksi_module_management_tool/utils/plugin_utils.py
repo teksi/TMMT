@@ -33,8 +33,12 @@ class PluginUtils:
         return os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
     @staticmethod
+    def get_plugin_icon_path(icon_filename):
+        return os.path.join(PluginUtils.plugin_root_path(), "icons", icon_filename)
+
+    @staticmethod
     def get_plugin_icon(icon_filename):
-        return QIcon(os.path.join(PluginUtils.plugin_root_path(), "icons", icon_filename))
+        return QIcon(PluginUtils.get_plugin_icon_path(icon_filename=icon_filename))
 
     @staticmethod
     def get_ui_class(ui_file):

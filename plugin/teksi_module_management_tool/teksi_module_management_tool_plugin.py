@@ -24,6 +24,7 @@
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
+from .gui.about_dialog import AboutDialog
 from .gui.tmmt_dialog import TMMTPluginDialog
 from .utils.plugin_utils import PluginUtils
 
@@ -49,7 +50,7 @@ class TMMTPlugin:
         # self.initLogger()
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr("&TEKSI Module Management Tool (TMMT)")
+        self.main_menu_name = self.tr("&TEKSI Module Management Tool (TMMT)")
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -133,7 +134,7 @@ class TMMTPlugin:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToDatabaseMenu(self.menu, action)
+            self.iface.addPluginToMenu(self.main_menu_name, action)
 
         self.actions.append(action)
 
@@ -141,38 +142,48 @@ class TMMTPlugin:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-
-        icon_path = PluginUtils.get_plugin_icon("tmmt-logo.png")
         self.add_action(
-            icon_path, text=self.tr("TMMT"), callback=self.run, parent=self.iface.mainWindow()
+            icon_path=PluginUtils.get_plugin_icon_path("tmmt-logo.png"),
+            text=self.tr("Show &main dialog"),
+            callback=self.show_main_dialog,
+            parent=self.iface.mainWindow(),
+        )
+        self.add_action(
+            icon_path=PluginUtils.get_plugin_icon_path("tmmt-logo.png"),
+            text=self.tr("&About"),
+            callback=self.show_about_dialog,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False,
         )
 
-        # will be set False in run()
-        self.first_start = True
+        self._get_main_menu_action().setIcon(
+            PluginUtils.get_plugin_icon("tmmt-logo.png"),
+        )
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginDatabaseMenu(
-                self.tr("&TEKSI Module Management Tool (TMMT)"), action
-            )
+            self.iface.removePluginMenu(self.main_menu_name, action)
             self.iface.removeToolBarIcon(action)
 
-    def run(self):
-        """Run method that performs all the real work"""
+    def show_main_dialog(self):
+        main_dialog = TMMTPluginDialog()
+        main_dialog.exec_()
 
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start is True:
-            self.first_start = False
-            self.dlg = TMMTPluginDialog()
+    def show_about_dialog(self):
+        about_dialog = AboutDialog()
+        about_dialog.exec_()
 
-        # show the dialog
-        self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec_()
-        # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+    def _get_main_menu_action(self):
+        actions = self.iface.pluginMenu().actions()
+        result_actions = [action for action in actions if action.text() == self.main_menu_name]
+
+        # OSX does not support & in the menu title
+        if not result_actions:
+            result_actions = [
+                action
+                for action in actions
+                if action.text() == self.main_menu_name.replace("&", "")
+            ]
+
+        return result_actions[0]
