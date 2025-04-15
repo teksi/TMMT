@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>TEKSI Module Management Tool</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="6" column="1">

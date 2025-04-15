@@ -21,10 +21,11 @@
  ***************************************************************************/
 """
 
-from qgis.PyQt.QtCore import QUrl
+from qgis.PyQt.QtCore import QUrl, Qt
 from qgis.PyQt.QtGui import QColor, QDesktopServices
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox
 from teksi_module_management_tool.utils.plugin_utils import PluginUtils
+from teksi_module_management_tool.utils.qt_utils import OverrideCursor
 
 DIALOG_UI = PluginUtils.get_ui_class("main_dialog.ui")
 
@@ -69,16 +70,17 @@ class MainDialog(QDialog, DIALOG_UI):
         if self._current_module is None:
             return
 
-        if self._current_module.versions == list():
-            self._current_module.load_versions()
+        with OverrideCursor(Qt.WaitCursor):
+            if self._current_module.versions == list():
+                self._current_module.load_versions()
 
-        for module_version in self._current_module.versions:
-            self.module_version_comboBox.addItem(module_version.display_name(), module_version)
+            for module_version in self._current_module.versions:
+                self.module_version_comboBox.addItem(module_version.display_name(), module_version)
 
-        if self._current_module.latest_version is not None:
-            self.module_latestVersion_label.setText(
-                f"Latest: {self._current_module.latest_version.name}"
-            )
+            if self._current_module.latest_version is not None:
+                self.module_latestVersion_label.setText(
+                    f"Latest: {self._current_module.latest_version.name}"
+                )
 
     def _seeChangeLogClicked(self):
         current_module_version = self.module_version_comboBox.currentData()
