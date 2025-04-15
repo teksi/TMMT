@@ -21,15 +21,74 @@
  ***************************************************************************/
 """
 
-from qgis.PyQt.QtWidgets import QDialog
+from qgis.PyQt.QtCore import QUrl
+from qgis.PyQt.QtGui import QColor, QDesktopServices
+from qgis.PyQt.QtWidgets import QDialog, QMessageBox
 from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 
 DIALOG_UI = PluginUtils.get_ui_class("main_dialog.ui")
 
 
 class MainDialog(QDialog, DIALOG_UI):
-    def __init__(self, parent=None):
+    def __init__(self, modules_registry, parent=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self.close_pushButton.clicked.connect(self.accept)
+
+        self._modules_registry = modules_registry
+        self._current_module = None
+
+        self.module_module_comboBox.clear()
+        self.module_module_comboBox.addItem(self.tr("Plese select a module"), None)
+        for module in self._modules_registry.modules():
+            self.module_module_comboBox.addItem(module.name, module)
+
+        self.module_module_comboBox.currentIndexChanged.connect(self._moduleChanged)
+
+        self.module_latestVersion_label.setText("")
+        module_latestVersion_label_palette = self.module_latestVersion_label.palette()
+        module_latestVersion_label_palette.setColor(
+            self.module_latestVersion_label.foregroundRole(), QColor(12, 167, 137)
+        )
+        self.module_latestVersion_label.setPalette(module_latestVersion_label_palette)
+
+        self.module_version_comboBox.clear()
+
+        self.module_seeChangeLog_pushButton.clicked.connect(self._seeChangeLogClicked)
+
+    def _moduleChanged(self, index):
+        if self.module_module_comboBox.currentData() == self._current_module:
+            return
+
+        self._current_module = self.module_module_comboBox.currentData()
+
+        self.module_latestVersion_label.setText("")
+        self.module_version_comboBox.clear()
+
+        if self._current_module is None:
+            return
+
+        if self._current_module.versions == list():
+            self._current_module.load_versions()
+
+        for module_version in self._current_module.versions:
+            self.module_version_comboBox.addItem(module_version.display_name(), module_version)
+
+        if self._current_module.latest_version is not None:
+            self.module_latestVersion_label.setText(
+                f"Latest: {self._current_module.latest_version.name}"
+            )
+
+    def _seeChangeLogClicked(self):
+        current_module_version = self.module_version_comboBox.currentData()
+
+        if current_module_version is None:
+            QMessageBox.warning(
+                self,
+                self.tr("Can't open changelog"),
+                self.tr("Please select a module and version first."),
+            )
+            return
+
+        QDesktopServices.openUrl(QUrl(current_module_version.html_url))

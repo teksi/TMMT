@@ -54,10 +54,12 @@ class TMMTPlugin:
 
         self.modules_registry = ModulesRegistry()
         self.modules_registry.register_module(
-            Module("TEKSI Wastewater", "https://github.com/teksi/wastewater")
+            Module(name="TEKSI Wastewater", organisation="teksi", repository="wastewater")
         )
         self.modules_registry.register_module(
-            Module("TEKSI District Heating", "https://github.com/teksi/district_heating")
+            Module(
+                name="TEKSI District Heating", organisation="teksi", repository="district_heating"
+            )
         )
 
     # noinspection PyMethodMayBeStatic
@@ -171,11 +173,11 @@ class TMMTPlugin:
             self.iface.removeToolBarIcon(action)
 
     def show_main_dialog(self):
-        main_dialog = MainDialog()
+        main_dialog = MainDialog(self.modules_registry, self.iface.mainWindow())
         main_dialog.exec_()
 
     def show_about_dialog(self):
-        about_dialog = AboutDialog()
+        about_dialog = AboutDialog(self.iface.mainWindow())
         about_dialog.exec_()
 
     def _get_main_menu_action(self):

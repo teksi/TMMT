@@ -6,10 +6,10 @@ class ModulesRegistry:
     def __init__(self):
         self._modules = {}
 
-    def register_module(self, name, module):
-        if name in self._modules:
-            raise ValueError(f"Module '{name}' is already registered.")
-        self._modules[name] = module
+    def register_module(self, module):
+        if module.name in self._modules:
+            raise ValueError(f"Module '{module.name}' is already registered.")
+        self._modules[module.name] = module
 
     def unregister_module(self, name):
         if name not in self._modules:
@@ -21,5 +21,5 @@ class ModulesRegistry:
             raise KeyError(f"Module '{name}' is not registered.")
         return self._modules[name]
 
-    def list_modules(self):
-        return list(self._modules.keys())
+    def modules(self):
+        return list(self._modules.values())
