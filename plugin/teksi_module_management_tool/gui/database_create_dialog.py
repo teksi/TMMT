@@ -32,7 +32,7 @@ from teksi_module_management_tool.libs import pgserviceparser
 DIALOG_UI = PluginUtils.get_ui_class("database_create_dialog.ui")
 
 
-class DataBaseCreateDialog(QDialog, DIALOG_UI):
+class DatabaseCreateDialog(QDialog, DIALOG_UI):
     def __init__(self, selected_service=None, parent=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)

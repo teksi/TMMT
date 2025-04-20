@@ -29,7 +29,7 @@ from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 from teksi_module_management_tool.utils.qt_utils import OverrideCursor
 from teksi_module_management_tool.utils.database_utils import DatabaseUtils
 from teksi_module_management_tool.libs import pgserviceparser
-from teksi_module_management_tool.gui.database_create_dialog import DataBaseCreateDialog
+from teksi_module_management_tool.gui.database_create_dialog import DatabaseCreateDialog
 
 DIALOG_UI = PluginUtils.get_ui_class("main_dialog.ui")
 
@@ -71,6 +71,7 @@ class MainDialog(QDialog, DIALOG_UI):
         self._serviceChanged()
 
         self.db_create_button.clicked.connect(self._createDatabaseClicked)
+        self.db_duplicate_button.clicked.connect(self._duplicateDatabaseClicked)
 
     def _loadDatabaseInformations(self):
         self.db_servicesConfigFilePath_label.setText(pgserviceparser.conf_path().as_posix())
@@ -122,6 +123,8 @@ class MainDialog(QDialog, DIALOG_UI):
             font = self.db_database_label.font()
             font.setItalic(True)
             self.db_database_label.setFont(font)
+
+            self.db_duplicate_button.setDisabled()
             return
         
         service_name = self.db_services_comboBox.currentText()
@@ -134,6 +137,8 @@ class MainDialog(QDialog, DIALOG_UI):
             font = self.db_database_label.font()
             font.setItalic(True)
             self.db_database_label.setFont(font)
+
+            self.db_duplicate_button.setDisabled()
             return
 
         self.db_database_label.setText(service_database)
@@ -141,10 +146,15 @@ class MainDialog(QDialog, DIALOG_UI):
         font.setItalic(False)
         self.db_database_label.setFont(font)
 
+        self.db_duplicate_button.setEnabled()
+
+        # Try getting existing module
         self._database_connection = DatabaseUtils.PsycopgConnection(service=service_name)
 
+        self._database_connection.cursor().execute("SELECT current_database()")
+
     def _createDatabaseClicked(self):
-        databaseCreateDialog = DataBaseCreateDialog(selected_service=self.db_services_comboBox.currentText(), parent=self)
+        databaseCreateDialog = DatabaseCreateDialog(selected_service=self.db_services_comboBox.currentText(), parent=self)
         
         if databaseCreateDialog.exec_() == QDialog.Rejected:
             return
@@ -154,4 +164,11 @@ class MainDialog(QDialog, DIALOG_UI):
         # Select the created service
         created_service_name = databaseCreateDialog.created_service_name()
         self.db_services_comboBox.setCurrentText(created_service_name)
+
+    def _duplicateDatabaseClicked(self):
+        databaseDuplicateDialog = DatabaseDuplicateDialog(selected_service=self.db_services_comboBox.currentText(), parent=self)
+        if databaseDuplicateDialog.exec_() == QDialog.Rejected:
+            return
+        
+        
 

@@ -61,4 +61,4 @@ class PluginUtils:
     @staticmethod
     def get_plugin_version():
         ini_text = QSettings(PluginUtils.get_metadata_file_path(), QSettings.IniFormat)
-        version = ini_text.value("version")
+        return ini_text.value("version")
