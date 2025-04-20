@@ -3,7 +3,7 @@ import configparser
 import os
 from typing import List
 
-from .plugin_utils import logger
+import logging
 
 try:
     import psycopg
@@ -32,12 +32,17 @@ class DatabaseUtils:
     databaseConfig = DatabaseConfig()
 
     class PsycopgConnection:
-        def __init__(self) -> None:
+        def __init__(self, service=None) -> None:
             self.connection = None
+            self.service = service
 
         def __enter__(self):
+            connection_parameters = DEFAULTS_CONN_ARG
+            if self.service:
+                connection_parameters["service"] = self.service
+
             self.connection = psycopg.connect(
-                DatabaseUtils.get_pgconf_as_psycopg_dsn(), **DEFAULTS_CONN_ARG
+                DatabaseUtils.get_pgconf_as_psycopg_dsn(), **connection_parameters,
             )
             if PSYCOPG_VERSION == 2:
                 self.connection.set_session(autocommit=True)
@@ -97,7 +102,7 @@ class DatabaseUtils:
             config.read(PG_CONFIG_PATH)
 
         if service_name not in config:
-            logger.warning(f"Service `{service_name}` not found in {PG_CONFIG_PATH}.")
+            logging.warning(f"Service `{service_name}` not found in {PG_CONFIG_PATH}.")
             return {}
 
         return config[service_name]
@@ -146,17 +151,17 @@ class DatabaseUtils:
 
     @staticmethod
     def disable_symbology_triggers():
-        logger.info("Disable symbology triggers")
+        logging.info("Disable symbology triggers")
         DatabaseUtils.execute("SELECT tww_sys.disable_symbology_triggers();")
 
     @staticmethod
     def enable_symbology_triggers():
-        logger.info("Enable symbology triggers")
+        logging.info("Enable symbology triggers")
         DatabaseUtils.execute("SELECT tww_sys.enable_symbology_triggers();")
 
     @staticmethod
     def check_symbology_triggers_enabled():
-        logger.info("Check symbology triggers enabled")
+        logging.info("Check symbology triggers enabled")
         row = DatabaseUtils.fetchone("SELECT tww_sys.check_symbology_triggers_enabled();")
         return row[0]
 
@@ -165,15 +170,15 @@ class DatabaseUtils:
         with DatabaseUtils.PsycopgConnection() as connection:
             cursor = connection.cursor()
 
-            logger.info("update_wastewater_node_symbology for all datasets - please be patient")
+            logging.info("update_wastewater_node_symbology for all datasets - please be patient")
             cursor.execute("SELECT tww_app.update_wastewater_node_symbology(NULL, True);")
-            logger.info("update_wastewater_structure_label for all datasets - please be patient")
+            logging.info("update_wastewater_structure_label for all datasets - please be patient")
             cursor.execute("SELECT tww_app.update_wastewater_structure_label(NULL, True);")
 
     @staticmethod
     def check_oid_prefix() -> List[str]:
         """Check whether the oid_prefix is set up for production"""
-        logger.info("Checking setup of oid prefix")
+        logging.info("Checking setup of oid prefix")
         prefixes = DatabaseUtils.fetchall("SELECT prefix FROM tww_sys.oid_prefixes WHERE active;")
 
         msg_list = []
@@ -192,7 +197,7 @@ class DatabaseUtils:
     @staticmethod
     def check_fk_defaults() -> List[str]:
         """Check whether the database is set up for production"""
-        logger.info("Checking setup of default_values")
+        logging.info("Checking setup of default_values")
 
         defaults = []
         vals = []

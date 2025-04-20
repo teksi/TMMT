@@ -21,7 +21,11 @@
  ***************************************************************************/
 """
 
-from qgis.PyQt.QtGui import QIcon
+import logging
+import logging.handlers
+
+from qgis.PyQt.QtCore import QDir, QFileInfo, QUrl
+from qgis.PyQt.QtGui import QIcon, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from .core.module import Module
@@ -49,8 +53,15 @@ class TMMTPlugin:
         self.iface = iface
         self.canvas = iface.mapCanvas()
 
+        self.__version__ = PluginUtils.get_plugin_version()
+
+        self.logsDirectory = "{}/logs".format(PluginUtils.plugin_root_path())
+        self._initLogger()
+
         self.actions = []
-        self.main_menu_name = self.tr("&TEKSI Module Management Tool (TMMT)")
+        self.main_menu_name = self.tr(f"&{PluginUtils.PLUGIN_NAME}")
+
+        
 
         self.modules_registry = ModulesRegistry()
         self.modules_registry.register_module(
@@ -61,6 +72,7 @@ class TMMTPlugin:
                 name="TEKSI District Heating", organisation="teksi", repository="district_heating"
             )
         )
+
 
     # noinspection PyMethodMayBeStatic
     def tr(self, source_text):
@@ -155,6 +167,13 @@ class TMMTPlugin:
             parent=self.iface.mainWindow(),
         )
         self.add_action(
+            icon_path=None,
+            text=self.tr("Show &log folder"),
+            callback=self.show_logs_folder,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False,
+        )
+        self.add_action(
             icon_path=PluginUtils.get_plugin_icon_path("tmmt-logo.png"),
             text=self.tr("&About"),
             callback=self.show_about_dialog,
@@ -176,6 +195,9 @@ class TMMTPlugin:
         main_dialog = MainDialog(self.modules_registry, self.iface.mainWindow())
         main_dialog.exec_()
 
+    def show_logs_folder(self):
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.logsDirectory))
+
     def show_about_dialog(self):
         about_dialog = AboutDialog(self.iface.mainWindow())
         about_dialog.exec_()
@@ -193,3 +215,30 @@ class TMMTPlugin:
             ]
 
         return result_actions[0]
+    
+    def _initLogger(self):
+        directory = QDir(self.logsDirectory)
+        if not directory.exists():
+            directory.mkpath(self.logsDirectory)
+
+        if directory.exists():
+            logfile = QFileInfo(directory, "TMMT.log")
+
+            # Handler for files rotation, create one log per day
+            rotationHandler = logging.handlers.TimedRotatingFileHandler(
+                logfile.filePath(), when="midnight", backupCount=10
+            )
+
+            # Configure logging
+            logging.basicConfig(
+                level=logging.DEBUG,
+                format="%(asctime)s %(levelname)-7s %(message)s",
+                handlers=[rotationHandler],
+            )
+        else:
+            logging.error(
+                "Can't create log files directory '{}'.".format(self.logsDirectory)
+            )
+
+        logging.info("")
+        logging.info(f"Starting {PluginUtils.PLUGIN_NAME} plugin version {self.__version__}")

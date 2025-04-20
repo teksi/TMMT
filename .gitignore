@@ -1,5 +1,6 @@
 
 plugin/teksi_module_management_tool/libs/
+plugin/teksi_module_management_tool/logs
 plugin*.zip
 plugin*.tar.gz
 

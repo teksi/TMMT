@@ -19,11 +19,14 @@
 
 import os
 
+from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.uic import loadUiType
 
 
 class PluginUtils:
+
+    PLUGIN_NAME = "TEKSI Module Management Tool (TMMT)"
 
     @staticmethod
     def plugin_root_path():
@@ -50,3 +53,12 @@ class PluginUtils:
         os.path.sep.join(ui_file.split("/"))
         ui_file_path = os.path.abspath(os.path.join(PluginUtils.plugin_root_path(), "ui", ui_file))
         return loadUiType(ui_file_path)[0]
+    
+    @staticmethod
+    def get_metadata_file_path():
+        return os.path.join(PluginUtils.plugin_root_path(), "metadata.txt")
+
+    @staticmethod
+    def get_plugin_version():
+        ini_text = QSettings(PluginUtils.get_metadata_file_path(), QSettings.IniFormat)
+        version = ini_text.value("version")

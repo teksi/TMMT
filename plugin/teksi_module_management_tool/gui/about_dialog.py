@@ -37,7 +37,7 @@ class AboutDialog(QDialog, DIALOG_UI):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        metadata_file_path = os.path.join(PluginUtils.plugin_root_path(), "metadata.txt")
+        metadata_file_path = PluginUtils.get_metadata_file_path()
 
         ini_text = QSettings(metadata_file_path, QSettings.IniFormat)
         version = ini_text.value("version")

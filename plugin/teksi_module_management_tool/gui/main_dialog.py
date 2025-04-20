@@ -27,6 +27,7 @@ from qgis.PyQt.QtGui import QColor, QDesktopServices
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox
 from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 from teksi_module_management_tool.utils.qt_utils import OverrideCursor
+from teksi_module_management_tool.utils.database_utils import DatabaseUtils
 from teksi_module_management_tool.libs import pgserviceparser
 from teksi_module_management_tool.gui.database_create_dialog import DataBaseCreateDialog
 
@@ -42,6 +43,8 @@ class MainDialog(QDialog, DIALOG_UI):
 
         self._modules_registry = modules_registry
         self._current_module = None
+
+        self._database_connection = None
 
         # Init GUI Modules
         self.module_module_comboBox.clear()
@@ -63,16 +66,18 @@ class MainDialog(QDialog, DIALOG_UI):
         self.module_seeChangeLog_pushButton.clicked.connect(self._seeChangeLogClicked)
 
         # Init GUI Database
-        self.db_servicesConfigFilePath_label.setText(pgserviceparser.conf_path().as_posix())
-
-        self.db_services_comboBox.clear()
-        for service_name in pgserviceparser.service_names():
-            self.db_services_comboBox.addItem(service_name)
+        self._loadDatabaseInformations()
         self.db_services_comboBox.currentIndexChanged.connect(self._serviceChanged)
         self._serviceChanged()
 
         self.db_create_button.clicked.connect(self._createDatabaseClicked)
 
+    def _loadDatabaseInformations(self):
+        self.db_servicesConfigFilePath_label.setText(pgserviceparser.conf_path().as_posix())
+
+        self.db_services_comboBox.clear()
+        for service_name in pgserviceparser.service_names():
+            self.db_services_comboBox.addItem(service_name)
 
     def _moduleChanged(self, index):
         if self.module_module_comboBox.currentData() == self._current_module:
@@ -136,6 +141,17 @@ class MainDialog(QDialog, DIALOG_UI):
         font.setItalic(False)
         self.db_database_label.setFont(font)
 
+        self._database_connection = DatabaseUtils.PsycopgConnection(service=service_name)
+
     def _createDatabaseClicked(self):
         databaseCreateDialog = DataBaseCreateDialog(selected_service=self.db_services_comboBox.currentText(), parent=self)
-        databaseCreateDialog.exec_()
+        
+        if databaseCreateDialog.exec_() == QDialog.Rejected:
+            return
+        
+        self._loadDatabaseInformations()
+
+        # Select the created service
+        created_service_name = databaseCreateDialog.created_service_name()
+        self.db_services_comboBox.setCurrentText(created_service_name)
+
