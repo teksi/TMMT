@@ -22,14 +22,23 @@
 #
 # ---------------------------------------------------------------------
 
-from qgis.PyQt.QtCore import QUrl, Qt
+import os
+import shutil
+import zipfile
+
+from qgis.PyQt.QtCore import QFileInfo, Qt, QUrl
 from qgis.PyQt.QtGui import QColor, QDesktopServices
-from qgis.PyQt.QtWidgets import QDialog, QMessageBox
+from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QMessageBox
+from teksi_module_management_tool.gui.database_create_dialog import DatabaseCreateDialog
+from teksi_module_management_tool.gui.database_duplicate_dialog import (
+    DatabaseDuplicateDialog,
+)
+from teksi_module_management_tool.libs import pgserviceparser
+from teksi_module_management_tool.libs.pum.config import PumConfig
+from teksi_module_management_tool.libs.pum.schema_migrations import SchemaMigrations
+from teksi_module_management_tool.utils.database_utils import DatabaseUtils
 from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 from teksi_module_management_tool.utils.qt_utils import OverrideCursor
-from teksi_module_management_tool.utils.database_utils import DatabaseUtils
-from teksi_module_management_tool.libs import pgserviceparser
-from teksi_module_management_tool.gui.database_create_dialog import DatabaseCreateDialog
 
 DIALOG_UI = PluginUtils.get_ui_class("main_dialog.ui")
 
@@ -53,6 +62,8 @@ class MainDialog(QDialog, DIALOG_UI):
             self.module_module_comboBox.addItem(module.name, module)
 
         self.module_module_comboBox.currentIndexChanged.connect(self._moduleChanged)
+
+        self.module_browseZip_toolButton.clicked.connect(self._moduleBrowseZipClicked)
 
         self.module_latestVersion_label.setText("")
         module_latestVersion_label_palette = self.module_latestVersion_label.palette()
@@ -104,6 +115,56 @@ class MainDialog(QDialog, DIALOG_UI):
                     f"Latest: {self._current_module.latest_version.name}"
                 )
 
+    def _moduleBrowseZipClicked(self):
+        filename, format = QFileDialog.getOpenFileName(
+            self, self.tr("Open from zip"), None, self.tr("Zip package (*.zip)")
+        )
+
+        if filename == "":
+            return
+
+        self.module_fromZip_lineEdit.setText(filename)
+
+        temp_dir = PluginUtils.plugin_temp_path()
+
+        package_dir = os.path.join(temp_dir, QFileInfo(filename).baseName())
+        if os.path.exists(package_dir):
+            shutil.rmtree(package_dir)
+
+        # Unzip the file to plugin temp dir
+        try:
+            with zipfile.ZipFile(filename, "r") as zip_ref:
+                zip_ref.extractall(temp_dir)
+        except zipfile.BadZipFile:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr("The selected file is not a valid zip archive."),
+            )
+            return
+
+        pumConfigFilename = os.path.join(package_dir, "datamodel", ".pum-config.yaml")
+        if not os.path.exists(pumConfigFilename):
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr("The selected zip file does not contain a valid .pum-config.yaml file."),
+            )
+            return
+
+        pumConfig = PumConfig.from_yaml(pumConfigFilename)
+
+        for parameter in pumConfig.parameters():
+            parameter_name = parameter.get("name", None)
+            if parameter_name is None:
+                continue
+
+            if parameter_name == "SRID":
+                default_srid = parameter.get("default", None)
+                if default_srid is not None:
+                    self.db_parameters_CRS_lineEdit.setText("")
+                    self.db_parameters_CRS_lineEdit.setPlaceholderText(str(default_srid))
+
     def _seeChangeLogClicked(self):
         current_module_version = self.module_version_comboBox.currentData()
 
@@ -124,21 +185,21 @@ class MainDialog(QDialog, DIALOG_UI):
             font.setItalic(True)
             self.db_database_label.setFont(font)
 
-            self.db_duplicate_button.setDisabled()
+            self.db_duplicate_button.setDisabled(True)
             return
-        
+
         service_name = self.db_services_comboBox.currentText()
         service_config = pgserviceparser.service_config(service_name)
 
         service_database = service_config.get("dbname", None)
-        
+
         if service_database is None:
             self.db_database_label.setText(self.tr("No database provided by the service"))
             font = self.db_database_label.font()
             font.setItalic(True)
             self.db_database_label.setFont(font)
 
-            self.db_duplicate_button.setDisabled()
+            self.db_duplicate_button.setDisabled(True)
             return
 
         self.db_database_label.setText(service_database)
@@ -146,19 +207,37 @@ class MainDialog(QDialog, DIALOG_UI):
         font.setItalic(False)
         self.db_database_label.setFont(font)
 
-        self.db_duplicate_button.setEnabled()
+        self.db_duplicate_button.setEnabled(True)
 
         # Try getting existing module
-        self._database_connection = DatabaseUtils.PsycopgConnection(service=service_name)
+        try:
+            self._database_connection = DatabaseUtils.PsycopgConnection(service=service_name)
+
+            cfg = PumConfig()
+            sm = SchemaMigrations(cfg)
+            self.assertFalse(sm.exists(self._database_connection))
+
+        except Exception as exception:
+            self._database_connection = None
+
+            QMessageBox.warning(
+                self,
+                self.tr("Can't connect to service"),
+                self.tr(f"Can't connect to service '{service_name}':\n{exception}."),
+            )
+
+            return
 
         self._database_connection.cursor().execute("SELECT current_database()")
 
     def _createDatabaseClicked(self):
-        databaseCreateDialog = DatabaseCreateDialog(selected_service=self.db_services_comboBox.currentText(), parent=self)
-        
+        databaseCreateDialog = DatabaseCreateDialog(
+            selected_service=self.db_services_comboBox.currentText(), parent=self
+        )
+
         if databaseCreateDialog.exec_() == QDialog.Rejected:
             return
-        
+
         self._loadDatabaseInformations()
 
         # Select the created service
@@ -166,9 +245,8 @@ class MainDialog(QDialog, DIALOG_UI):
         self.db_services_comboBox.setCurrentText(created_service_name)
 
     def _duplicateDatabaseClicked(self):
-        databaseDuplicateDialog = DatabaseDuplicateDialog(selected_service=self.db_services_comboBox.currentText(), parent=self)
+        databaseDuplicateDialog = DatabaseDuplicateDialog(
+            selected_service=self.db_services_comboBox.currentText(), parent=self
+        )
         if databaseDuplicateDialog.exec_() == QDialog.Rejected:
             return
-        
-        
-

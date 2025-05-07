@@ -25,7 +25,7 @@ import logging
 import logging.handlers
 
 from qgis.PyQt.QtCore import QDir, QFileInfo, QUrl
-from qgis.PyQt.QtGui import QIcon, QDesktopServices
+from qgis.PyQt.QtGui import QDesktopServices, QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from .core.module import Module
@@ -55,13 +55,11 @@ class TMMTPlugin:
 
         self.__version__ = PluginUtils.get_plugin_version()
 
-        self.logsDirectory = "{}/logs".format(PluginUtils.plugin_root_path())
+        self.logsDirectory = f"{PluginUtils.plugin_root_path()}/logs"
         self._initLogger()
 
         self.actions = []
         self.main_menu_name = self.tr(f"&{PluginUtils.PLUGIN_NAME}")
-
-        
 
         self.modules_registry = ModulesRegistry()
         self.modules_registry.register_module(
@@ -72,7 +70,6 @@ class TMMTPlugin:
                 name="TEKSI District Heating", organisation="teksi", repository="district_heating"
             )
         )
-
 
     # noinspection PyMethodMayBeStatic
     def tr(self, source_text):
@@ -215,7 +212,7 @@ class TMMTPlugin:
             ]
 
         return result_actions[0]
-    
+
     def _initLogger(self):
         directory = QDir(self.logsDirectory)
         if not directory.exists():
@@ -236,9 +233,7 @@ class TMMTPlugin:
                 handlers=[rotationHandler],
             )
         else:
-            logging.error(
-                "Can't create log files directory '{}'.".format(self.logsDirectory)
-            )
+            logging.error(f"Can't create log files directory '{self.logsDirectory}'.")
 
         logging.info("")
         logging.info(f"Starting {PluginUtils.PLUGIN_NAME} plugin version {self.__version__}")

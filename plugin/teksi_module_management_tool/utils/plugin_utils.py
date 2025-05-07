@@ -19,7 +19,7 @@
 
 import os
 
-from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtCore import QSettings, QStandardPaths
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.uic import loadUiType
 
@@ -34,6 +34,18 @@ class PluginUtils:
         Returns the root path of the plugin
         """
         return os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
+    @staticmethod
+    def plugin_temp_path():
+        plugin_basename = PluginUtils.plugin_root_path().split(os.sep)[-1]
+
+        plugin_temp_dir = os.path.join(
+            QStandardPaths.writableLocation(QStandardPaths.TempLocation), plugin_basename
+        )
+        if not os.path.exists(plugin_temp_dir):
+            os.makedirs(plugin_temp_dir)
+
+        return plugin_temp_dir
 
     @staticmethod
     def get_plugin_icon_path(icon_filename):
@@ -53,7 +65,7 @@ class PluginUtils:
         os.path.sep.join(ui_file.split("/"))
         ui_file_path = os.path.abspath(os.path.join(PluginUtils.plugin_root_path(), "ui", ui_file))
         return loadUiType(ui_file_path)[0]
-    
+
     @staticmethod
     def get_metadata_file_path():
         return os.path.join(PluginUtils.plugin_root_path(), "metadata.txt")

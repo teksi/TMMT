@@ -1,10 +1,3 @@
-import collections
-import configparser
-import os
-from typing import List
-
-import logging
-
 try:
     import psycopg
 
@@ -24,13 +17,12 @@ class DatabaseUtils:
             self.connection = None
             self.service = service
 
-        def __enter__(self):
             connection_parameters = DEFAULTS_CONN_ARG
             if self.service:
                 connection_parameters["service"] = self.service
 
             self.connection = psycopg.connect(
-                DatabaseUtils.get_pgconf_as_psycopg_dsn(), **connection_parameters,
+                **connection_parameters,
             )
             if PSYCOPG_VERSION == 2:
                 self.connection.set_session(autocommit=True)
@@ -40,4 +32,3 @@ class DatabaseUtils:
         def __exit__(self, exc_type, exc_val, exc_tb):
             self.connection.commit()
             self.connection.close()
-

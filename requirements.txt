@@ -1,1 +1,2 @@
-pgserviceparser>=2.3.0
+pgserviceparser >= 2.3.0
+pum >= 0.10.1
