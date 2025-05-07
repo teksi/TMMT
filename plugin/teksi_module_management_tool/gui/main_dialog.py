@@ -125,6 +125,18 @@ class MainDialog(QDialog, DIALOG_UI):
 
         self.module_fromZip_lineEdit.setText(filename)
 
+        try:
+            with OverrideCursor(Qt.WaitCursor):
+                self._loadModuleFromZip(filename)
+        except Exception as exception:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr(f"Can't load module from zip file:\n{exception}"),
+            )
+            return
+
+    def _loadModuleFromZip(self, filename):
         temp_dir = PluginUtils.plugin_temp_path()
 
         package_dir = os.path.join(temp_dir, QFileInfo(filename).baseName())
@@ -136,21 +148,15 @@ class MainDialog(QDialog, DIALOG_UI):
             with zipfile.ZipFile(filename, "r") as zip_ref:
                 zip_ref.extractall(temp_dir)
         except zipfile.BadZipFile:
-            QMessageBox.critical(
-                self,
-                self.tr("Error"),
-                self.tr("The selected file is not a valid zip archive."),
-            )
-            return
+            raise Exception(self.tr(f"The selected file '{filename}' is not a valid zip archive."))
 
         pumConfigFilename = os.path.join(package_dir, "datamodel", ".pum-config.yaml")
         if not os.path.exists(pumConfigFilename):
-            QMessageBox.critical(
-                self,
-                self.tr("Error"),
-                self.tr("The selected zip file does not contain a valid .pum-config.yaml file."),
+            raise Exception(
+                self.tr(
+                    f"The selected file '{filename}' does not contain a valid .pum-config.yaml file."
+                )
             )
-            return
 
         pumConfig = PumConfig.from_yaml(pumConfigFilename)
 

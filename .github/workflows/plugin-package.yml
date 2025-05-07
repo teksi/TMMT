@@ -50,7 +50,7 @@ jobs:
           qgis-plugin-ci -v package ${VERSION} \
             --allow-uncommitted-changes \
             --asset-path plugin/teksi_module_management_tool/libs \
-            --transifex-token "${{ secrets.TX_TOKEN }}"
+            # --transifex-token "${{ secrets.TX_TOKEN }}"
 
       - uses: actions/upload-artifact@v4
         with:
