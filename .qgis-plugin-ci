@@ -1,7 +1,3 @@
 plugin_path: plugin/teksi_module_management_tool
 github_organization_slug: TEKSI
 project_slug: TMMT
-
-transifex_organization: teksi
-transifex_project: tmmt-plugin
-transifex_resource: tmmt-plugin
