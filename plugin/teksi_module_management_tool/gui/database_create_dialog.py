@@ -114,15 +114,7 @@ class DatabaseCreateDialog(QDialog, DIALOG_UI):
 
         service_settings = self._get_service_settings()
         
-        pgserviceparser.write_service(service_name=service_name, settings=
-            {
-                "host": self.parameters_host_lineEdit.text(),
-                "port": self.parameters_port_lineEdit.text(),
-                "sslmode": self.parameters_ssl_comboBox.currentText(),
-                "dbname": self.database_lineEdit.text(),
-                "user": self.parameters_user_lineEdit.text(),
-                "password": self.parameters_password_lineEdit.text(),
-            },
+        pgserviceparser.write_service(service_name=service_name, settings=service_settings,
             create_if_not_found=True,
         )
 
