@@ -64,7 +64,8 @@ class DatabaseCreateDialog(QDialog, DIALOG_UI):
 
         self.buttonBox.accepted.connect(self._accept)
 
-        self._serviceChanged()
+        if self.existingService_comboBox.count() > 0:
+            self._serviceChanged()
 
     def created_service_name(self):
         return self.service_lineEdit.text()

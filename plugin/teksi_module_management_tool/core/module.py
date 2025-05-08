@@ -50,9 +50,9 @@ class Module:
         r.raise_for_status()
 
         json_versions = r.json()
-        self.versions = []
+        self.branch_versions = []
         self.latest_version = None
         for json_version in json_versions:
             module_version = ModuleVersion(organisation=self.organisation, repository=self.repository, json_payload=json_version, type=ModuleVersion.Type.BRANCH)
-            self.versions.append(module_version)
+            self.branch_versions.append(module_version)
 

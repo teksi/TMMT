@@ -101,8 +101,17 @@ class MainDialog(QDialog, DIALOG_UI):
         self.db_servicesConfigFilePath_label.setText(pgserviceparser.conf_path().as_posix())
 
         self.db_services_comboBox.clear()
-        for service_name in pgserviceparser.service_names():
-            self.db_services_comboBox.addItem(service_name)
+
+        try:
+            for service_name in pgserviceparser.service_names():
+                self.db_services_comboBox.addItem(service_name)
+        except Exception as exception:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr(f"Can't load database services:\n{exception}"),
+            )
+            return
 
     def _moduleChanged(self, index):
         if self.module_module_comboBox.currentData() == self.__current_module:
@@ -129,7 +138,7 @@ class MainDialog(QDialog, DIALOG_UI):
                 )
 
         self.module_version_comboBox.insertSeparator(self.module_version_comboBox.count())
-        self.module_version_comboBox.addItem(self.tr("Load branches"), self.MODULE_VERSION_SPECIAL_LOAD_BRANCHES)
+        self.module_version_comboBox.addItem(self.tr("Load additional branches"), self.MODULE_VERSION_SPECIAL_LOAD_BRANCHES)
 
     def _moduleVersionChanged(self, index):
         if self.module_version_comboBox.currentData() == self.MODULE_VERSION_SPECIAL_LOAD_BRANCHES:
