@@ -155,16 +155,6 @@ class MainDialog(QDialog, DIALOG_UI):
         else:
             self.module_seeChangeLog_pushButton.setEnabled(False)
 
-        # Load module from zip
-        if current_module_version.zip_url is not None:
-            self.module_fromZip_lineEdit.setText(current_module_version.zip_url)
-            self.module_fromZip_lineEdit.setEnabled(True)
-            self.module_browseZip_toolButton.setEnabled(True)
-        else:
-            self.module_fromZip_lineEdit.setText("")
-            self.module_fromZip_lineEdit.setEnabled(False)
-            self.module_browseZip_toolButton.setEnabled(False)
-
     def _loadAdditionalVersionsFromBranches(self):
         if self.__current_module is None:
             return
