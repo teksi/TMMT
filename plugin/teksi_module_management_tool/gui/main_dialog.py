@@ -25,15 +25,16 @@
 import os
 import shutil
 import zipfile
-import psycopg
 
+import psycopg
 from qgis.PyQt.QtCore import QFileInfo, Qt, QUrl
 from qgis.PyQt.QtGui import QColor, QDesktopServices
-from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QDialog, QFileDialog, QMenu, QMessageBox
 from teksi_module_management_tool.gui.database_create_dialog import DatabaseCreateDialog
 from teksi_module_management_tool.gui.database_duplicate_dialog import (
     DatabaseDuplicateDialog,
 )
+from teksi_module_management_tool.gui.service_edit_dialog import ServiceEditDialog
 from teksi_module_management_tool.libs import pgserviceparser
 from teksi_module_management_tool.libs.pum.config import PumConfig
 from teksi_module_management_tool.libs.pum.schema_migrations import SchemaMigrations
@@ -67,17 +68,7 @@ class MainDialog(QDialog, DIALOG_UI):
         self.__initGuiModules()
 
         # Init GUI Database
-        self.__loadDatabaseInformations()
-        self.db_services_comboBox.currentIndexChanged.connect(self.__serviceChanged)
-        self.__serviceChanged()
-
-        self.db_create_button.clicked.connect(self.__createDatabaseClicked)
-        self.db_duplicate_button.clicked.connect(self.__duplicateDatabaseClicked)
-
-        self.db_install_pushButton.setDisabled(True)
-        self.db_install_pushButton.clicked.connect(self.__installModuleClicked)
-
-        self.db_createAndGrantRoles_pushButton.clicked.connect(self.__createAndGrantRolesClicked)
+        self.__initGuiDatabase()
 
     def __initGuiModules(self):
         self.module_module_comboBox.clear()
@@ -100,6 +91,31 @@ class MainDialog(QDialog, DIALOG_UI):
         self.module_version_comboBox.currentIndexChanged.connect(self.__moduleVersionChanged)
         self.module_seeChangeLog_pushButton.clicked.connect(self.__seeChangeLogClicked)
         self.module_browseZip_toolButton.clicked.connect(self.__moduleBrowseZipClicked)
+
+    def __initGuiDatabase(self):
+        self.__loadDatabaseInformations()
+        self.db_services_comboBox.currentIndexChanged.connect(self.__serviceChanged)
+
+        db_operations_menu = QMenu(self.db_operations_toolButton)
+
+        actionCreateDb = QAction(self.tr("Create database"), db_operations_menu)
+        self.__actionDuplicateDb = QAction(self.tr("Duplicate database"), db_operations_menu)
+        actionEditService = QAction(self.tr("Edit service"), db_operations_menu)
+
+        actionCreateDb.triggered.connect(self.__createDatabaseClicked)
+        self.__actionDuplicateDb.triggered.connect(self.__duplicateDatabaseClicked)
+        actionEditService.triggered.connect(self.__editServiceClicked)
+
+        db_operations_menu.addAction(actionCreateDb)
+        db_operations_menu.addAction(self.__actionDuplicateDb)
+        db_operations_menu.addAction(actionEditService)
+
+        self.db_operations_toolButton.setMenu(db_operations_menu)
+
+        self.db_install_pushButton.setDisabled(True)
+        self.db_install_pushButton.clicked.connect(self.__installModuleClicked)
+
+        self.db_createAndGrantRoles_pushButton.clicked.connect(self.__createAndGrantRolesClicked)
 
     def __loadDatabaseInformations(self):
         self.db_servicesConfigFilePath_label.setText(pgserviceparser.conf_path().as_posix())
@@ -142,10 +158,14 @@ class MainDialog(QDialog, DIALOG_UI):
                 )
 
         self.module_version_comboBox.insertSeparator(self.module_version_comboBox.count())
-        self.module_version_comboBox.addItem(self.tr("Load from ZIP file"), self.MODULE_VERSION_SPECIAL_LOAD_FROM_ZIP)
+        self.module_version_comboBox.addItem(
+            self.tr("Load from ZIP file"), self.MODULE_VERSION_SPECIAL_LOAD_FROM_ZIP
+        )
 
         self.module_version_comboBox.insertSeparator(self.module_version_comboBox.count())
-        self.module_version_comboBox.addItem(self.tr("Load additional branches"), self.MODULE_VERSION_SPECIAL_LOAD_DEVELOPMENT)
+        self.module_version_comboBox.addItem(
+            self.tr("Load additional branches"), self.MODULE_VERSION_SPECIAL_LOAD_DEVELOPMENT
+        )
 
     def __moduleVersionChanged(self, index):
 
@@ -155,7 +175,10 @@ class MainDialog(QDialog, DIALOG_UI):
         else:
             self.module_zipPackage_groupBox.setVisible(False)
 
-        if self.module_version_comboBox.currentData() == self.MODULE_VERSION_SPECIAL_LOAD_DEVELOPMENT:
+        if (
+            self.module_version_comboBox.currentData()
+            == self.MODULE_VERSION_SPECIAL_LOAD_DEVELOPMENT
+        ):
             self.__loadDevelopmentVersions()
             return
 
@@ -177,7 +200,7 @@ class MainDialog(QDialog, DIALOG_UI):
                 self.tr("No development versions found for this module."),
             )
             return
-        
+
         self.module_version_comboBox.removeItem(self.module_version_comboBox.count() - 1)
 
         for module_version in self.__current_module.development_versions:
@@ -256,7 +279,6 @@ class MainDialog(QDialog, DIALOG_UI):
             self.db_install_pushButton.setText(self.tr(f"Install {migrationVersion}"))
 
         self.db_install_pushButton.setEnabled(True)
-        
 
     def __seeChangeLogClicked(self):
         current_module_version = self.module_version_comboBox.currentData()
@@ -276,7 +298,7 @@ class MainDialog(QDialog, DIALOG_UI):
                 self.tr("Please select a module and version first."),
             )
             return
-        
+
         if current_module_version.html_url is None:
             QMessageBox.warning(
                 self,
@@ -294,7 +316,7 @@ class MainDialog(QDialog, DIALOG_UI):
             font.setItalic(True)
             self.db_database_label.setFont(font)
 
-            self.db_duplicate_button.setDisabled(True)
+            self.__actionDuplicateDb.setDisabled(True)
             return
 
         service_name = self.db_services_comboBox.currentText()
@@ -308,7 +330,7 @@ class MainDialog(QDialog, DIALOG_UI):
             font.setItalic(True)
             self.db_database_label.setFont(font)
 
-            self.db_duplicate_button.setDisabled(True)
+            self.__actionDuplicateDb.setDisabled(True)
             return
 
         self.db_database_label.setText(service_database)
@@ -316,7 +338,7 @@ class MainDialog(QDialog, DIALOG_UI):
         font.setItalic(False)
         self.db_database_label.setFont(font)
 
-        self.db_duplicate_button.setEnabled(True)
+        self.__actionDuplicateDb.setEnabled(True)
 
         # Try getting existing module
         try:
@@ -356,6 +378,14 @@ class MainDialog(QDialog, DIALOG_UI):
         if databaseDuplicateDialog.exec_() == QDialog.Rejected:
             return
 
+    def __editServiceClicked(self):
+        selected_service_name = self.db_services_comboBox.currentText()
+        serviceEditDialog = ServiceEditDialog(selected_service=selected_service_name, parent=self)
+        if serviceEditDialog.exec_() == QDialog.Accepted:
+            # Reload database services
+            self.__loadDatabaseInformations()
+            self.db_services_comboBox.setCurrentText(selected_service_name)
+
     def __installModuleClicked(self):
 
         if self.__database_connection is None:
@@ -385,16 +415,17 @@ class MainDialog(QDialog, DIALOG_UI):
                 self.tr("Please provide a valid SRID."),
             )
             return
-        
+
         srid = int(srid_string)
 
         try:
             service_name = self.db_services_comboBox.currentText()
-            upgrader = Upgrader(pg_service=service_name,
-                                config=self.__pum_config,
-                                dir=self.__data_model_dir,
-                                parameters={"SRID": srid}
-                       )
+            upgrader = Upgrader(
+                pg_service=service_name,
+                config=self.__pum_config,
+                dir=self.__data_model_dir,
+                parameters={"SRID": srid},
+            )
             with OverrideCursor(Qt.WaitCursor):
                 upgrader.install()
         except Exception as exception:
@@ -404,7 +435,7 @@ class MainDialog(QDialog, DIALOG_UI):
                 self.tr(f"Can't install/upgrade module:\n{exception}"),
             )
             return
-            
+
     def __createAndGrantRolesClicked(self):
 
         if self.__pum_config is None:
@@ -418,11 +449,12 @@ class MainDialog(QDialog, DIALOG_UI):
         with OverrideCursor(Qt.WaitCursor):
             try:
                 service_name = self.db_services_comboBox.currentText()
-                upgrader = Upgrader(pg_service=service_name,
-                                    config=self.__pum_config,
-                                    dir=self.__data_model_dir,
-                                    parameters={"SRID": 2056}
-                           )
+                upgrader = Upgrader(
+                    pg_service=service_name,
+                    config=self.__pum_config,
+                    dir=self.__data_model_dir,
+                    parameters={"SRID": 2056},
+                )
                 upgrader.create_and_grant_roles()
             except Exception as exception:
                 QMessageBox.critical(
