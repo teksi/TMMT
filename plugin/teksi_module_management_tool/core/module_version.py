@@ -9,22 +9,27 @@ class ModuleVersion:
     class Type:
         RELEASE = "release"
         BRANCH = "branch"
+        PULL_REQUEST = "pull_request"
 
-    def __init__(self, organisation, repository, json_payload: dict, type = Type.RELEASE):
+    def __init__(self, organisation, repository, json_payload: dict, type = Type.RELEASE, name=None, branch=None):
 
         self.type = type
-        self.name = json_payload["name"]
+        self.name = name
+        self.branch = branch
         self.created_at = None
         self.prerelease = False
         self.html_url = None
-        self.download_url = f"https://github.com/{organisation}/{repository}/archive/refs/heads/{self.name}.zip"
 
         if self.type == ModuleVersion.Type.RELEASE:
             self.__parse_release(json_payload)
         elif self.type == ModuleVersion.Type.BRANCH:
-            self.__parse_branch(json_payload)
+            pass
+        elif self.type == ModuleVersion.Type.PULL_REQUEST:
+            self.__parse_pull_request(json_payload)
         else:
             raise ValueError(f"Unknown type '{type}'")
+        
+        self.download_url = f"https://github.com/{organisation}/{repository}/archive/refs/heads/{self.branch}.zip"
 
     def display_name(self):
         if self.prerelease:
@@ -50,10 +55,18 @@ class ModuleVersion:
         return file_path
 
     def __parse_release(self, json_payload: dict):
+        if self.name is None:
+            self.name = json_payload["name"]
+        self.branch = self.name
         self.created_at = QDateTime.fromString(json_payload["created_at"], Qt.ISODate)
         self.prerelease = json_payload["prerelease"]
         self.html_url = json_payload["html_url"]
 
-    def __parse_branch(self, json_payload: dict):
-        pass
+    def __parse_pull_request(self, json_payload: dict):
+        if self.name is None:
+            self.name = f"#{json_payload['number']} {json_payload['title']}"
+        self.branch = json_payload["head"]["ref"]
+        self.created_at = QDateTime.fromString(json_payload["created_at"], Qt.ISODate)
+        self.prerelease = False
+        self.html_url = json_payload["html_url"]
 

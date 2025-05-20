@@ -224,21 +224,42 @@
           <string>Module</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="1">
+          <item row="0" column="0">
            <widget class="QLabel" name="label">
             <property name="text">
              <string>Module</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="0" column="1">
+           <widget class="QComboBox" name="module_module_comboBox">
+            <item>
+             <property name="text">
+              <string>TEKSI WW</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>TEKSI DW</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="module_latestVersion_label">
+            <property name="text">
+             <string>latest</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
            <widget class="QLabel" name="label_2">
             <property name="text">
              <string>Version</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
+          <item row="1" column="1">
            <widget class="QComboBox" name="module_version_comboBox">
             <item>
              <property name="text">
@@ -257,49 +278,30 @@
             </item>
            </widget>
           </item>
-          <item row="0" column="2">
-           <widget class="QComboBox" name="module_module_comboBox">
-            <item>
-             <property name="text">
-              <string>TEKSI WW</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>TEKSI DW</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="1" column="3">
+          <item row="1" column="2">
            <widget class="QPushButton" name="module_seeChangeLog_pushButton">
             <property name="text">
              <string>See changelog</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="label_15">
-            <property name="text">
-             <string>From ZIP</string>
+          <item row="2" column="0" colspan="3">
+           <widget class="QGroupBox" name="module_zipPackage_groupBox">
+            <property name="title">
+             <string>Zip package</string>
             </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLineEdit" name="module_fromZip_lineEdit"/>
-          </item>
-          <item row="2" column="3">
-           <widget class="QToolButton" name="module_browseZip_toolButton">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="module_latestVersion_label">
-            <property name="text">
-             <string>latest</string>
-            </property>
+            <layout class="QGridLayout" name="gridLayout_9">
+             <item row="0" column="1">
+              <widget class="QToolButton" name="module_browseZip_toolButton">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLineEdit" name="module_fromZip_lineEdit"/>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>

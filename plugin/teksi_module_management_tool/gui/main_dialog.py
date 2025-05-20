@@ -46,7 +46,8 @@ DIALOG_UI = PluginUtils.get_ui_class("main_dialog.ui")
 
 class MainDialog(QDialog, DIALOG_UI):
 
-    MODULE_VERSION_SPECIAL_LOAD_BRANCHES = "Load branches"
+    MODULE_VERSION_SPECIAL_LOAD_FROM_ZIP = "Load from ZIP"
+    MODULE_VERSION_SPECIAL_LOAD_DEVELOPMENT = "Load development versions"
 
     def __init__(self, modules_registry, parent=None):
         QDialog.__init__(self, parent)
@@ -63,12 +64,26 @@ class MainDialog(QDialog, DIALOG_UI):
         self.__data_model_dir = None
 
         # Init GUI Modules
+        self.__initGuiModules()
+
+        # Init GUI Database
+        self.__loadDatabaseInformations()
+        self.db_services_comboBox.currentIndexChanged.connect(self.__serviceChanged)
+        self.__serviceChanged()
+
+        self.db_create_button.clicked.connect(self.__createDatabaseClicked)
+        self.db_duplicate_button.clicked.connect(self.__duplicateDatabaseClicked)
+
+        self.db_install_pushButton.setDisabled(True)
+        self.db_install_pushButton.clicked.connect(self.__installModuleClicked)
+
+        self.db_createAndGrantRoles_pushButton.clicked.connect(self.__createAndGrantRolesClicked)
+
+    def __initGuiModules(self):
         self.module_module_comboBox.clear()
         self.module_module_comboBox.addItem(self.tr("Plese select a module"), None)
         for module in self.__modules_registry.modules():
             self.module_module_comboBox.addItem(module.name, module)
-
-        self.module_module_comboBox.currentIndexChanged.connect(self._moduleChanged)
 
         self.module_latestVersion_label.setText("")
         module_latestVersion_label_palette = self.module_latestVersion_label.palette()
@@ -78,26 +93,15 @@ class MainDialog(QDialog, DIALOG_UI):
         self.module_latestVersion_label.setPalette(module_latestVersion_label_palette)
 
         self.module_version_comboBox.clear()
-        self.module_version_comboBox.currentIndexChanged.connect(self._moduleVersionChanged)
 
-        self.module_seeChangeLog_pushButton.clicked.connect(self._seeChangeLogClicked)
+        self.module_zipPackage_groupBox.setVisible(False)
 
-        self.module_browseZip_toolButton.clicked.connect(self._moduleBrowseZipClicked)
+        self.module_module_comboBox.currentIndexChanged.connect(self.__moduleChanged)
+        self.module_version_comboBox.currentIndexChanged.connect(self.__moduleVersionChanged)
+        self.module_seeChangeLog_pushButton.clicked.connect(self.__seeChangeLogClicked)
+        self.module_browseZip_toolButton.clicked.connect(self.__moduleBrowseZipClicked)
 
-        # Init GUI Database
-        self._loadDatabaseInformations()
-        self.db_services_comboBox.currentIndexChanged.connect(self._serviceChanged)
-        self._serviceChanged()
-
-        self.db_create_button.clicked.connect(self._createDatabaseClicked)
-        self.db_duplicate_button.clicked.connect(self._duplicateDatabaseClicked)
-
-        self.db_install_pushButton.setDisabled(True)
-        self.db_install_pushButton.clicked.connect(self._installModuleClicked)
-
-        self.db_createAndGrantRoles_pushButton.clicked.connect(self._createAndGrantRolesClicked)
-
-    def _loadDatabaseInformations(self):
+    def __loadDatabaseInformations(self):
         self.db_servicesConfigFilePath_label.setText(pgserviceparser.conf_path().as_posix())
 
         self.db_services_comboBox.clear()
@@ -113,7 +117,7 @@ class MainDialog(QDialog, DIALOG_UI):
             )
             return
 
-    def _moduleChanged(self, index):
+    def __moduleChanged(self, index):
         if self.module_module_comboBox.currentData() == self.__current_module:
             return
 
@@ -138,44 +142,48 @@ class MainDialog(QDialog, DIALOG_UI):
                 )
 
         self.module_version_comboBox.insertSeparator(self.module_version_comboBox.count())
-        self.module_version_comboBox.addItem(self.tr("Load additional branches"), self.MODULE_VERSION_SPECIAL_LOAD_BRANCHES)
+        self.module_version_comboBox.addItem(self.tr("Load from ZIP file"), self.MODULE_VERSION_SPECIAL_LOAD_FROM_ZIP)
 
-    def _moduleVersionChanged(self, index):
-        if self.module_version_comboBox.currentData() == self.MODULE_VERSION_SPECIAL_LOAD_BRANCHES:
-            self._loadAdditionalVersionsFromBranches()
+        self.module_version_comboBox.insertSeparator(self.module_version_comboBox.count())
+        self.module_version_comboBox.addItem(self.tr("Load additional branches"), self.MODULE_VERSION_SPECIAL_LOAD_DEVELOPMENT)
+
+    def __moduleVersionChanged(self, index):
+
+        if self.module_version_comboBox.currentData() == self.MODULE_VERSION_SPECIAL_LOAD_FROM_ZIP:
+            self.module_zipPackage_groupBox.setVisible(True)
+            return
+        else:
+            self.module_zipPackage_groupBox.setVisible(False)
+
+        if self.module_version_comboBox.currentData() == self.MODULE_VERSION_SPECIAL_LOAD_DEVELOPMENT:
+            self.__loadDevelopmentVersions()
             return
 
         current_module_version = self.module_version_comboBox.currentData()
-
         if current_module_version is None:
             return
 
-        if current_module_version == self.__current_module.latest_version:
-            self.module_seeChangeLog_pushButton.setEnabled(True)
-        else:
-            self.module_seeChangeLog_pushButton.setEnabled(False)
-
-    def _loadAdditionalVersionsFromBranches(self):
+    def __loadDevelopmentVersions(self):
         if self.__current_module is None:
             return
 
         with OverrideCursor(Qt.WaitCursor):
-            self.__current_module.load_branch_versions()
+            self.__current_module.load_development_versions()
 
-        if self.__current_module.branch_versions == list():
+        if self.__current_module.development_versions == list():
             QMessageBox.warning(
                 self,
-                self.tr("No branches found"),
-                self.tr("No branches found for this module."),
+                self.tr("No development versions found"),
+                self.tr("No development versions found for this module."),
             )
             return
         
         self.module_version_comboBox.removeItem(self.module_version_comboBox.count() - 1)
 
-        for module_version in self.__current_module.branch_versions:
+        for module_version in self.__current_module.development_versions:
             self.module_version_comboBox.addItem(module_version.display_name(), module_version)
 
-    def _moduleBrowseZipClicked(self):
+    def __moduleBrowseZipClicked(self):
         filename, format = QFileDialog.getOpenFileName(
             self, self.tr("Open from zip"), None, self.tr("Zip package (*.zip)")
         )
@@ -187,7 +195,7 @@ class MainDialog(QDialog, DIALOG_UI):
 
         try:
             with OverrideCursor(Qt.WaitCursor):
-                self._loadModuleFromZip(filename)
+                self.__loadModuleFromZip(filename)
         except Exception as exception:
             QMessageBox.critical(
                 self,
@@ -196,7 +204,7 @@ class MainDialog(QDialog, DIALOG_UI):
             )
             return
 
-    def _loadModuleFromZip(self, filename):
+    def __loadModuleFromZip(self, filename):
 
         self.__pum_config = None
         self.__data_model_dir = None
@@ -250,8 +258,16 @@ class MainDialog(QDialog, DIALOG_UI):
         self.db_install_pushButton.setEnabled(True)
         
 
-    def _seeChangeLogClicked(self):
+    def __seeChangeLogClicked(self):
         current_module_version = self.module_version_comboBox.currentData()
+
+        if current_module_version == self.MODULE_VERSION_SPECIAL_LOAD_FROM_ZIP:
+            QMessageBox.warning(
+                self,
+                self.tr("Can't open changelog"),
+                self.tr("Changelog is not available for Zip packages."),
+            )
+            return
 
         if current_module_version is None:
             QMessageBox.warning(
@@ -260,10 +276,18 @@ class MainDialog(QDialog, DIALOG_UI):
                 self.tr("Please select a module and version first."),
             )
             return
+        
+        if current_module_version.html_url is None:
+            QMessageBox.warning(
+                self,
+                self.tr("Can't open changelog"),
+                self.tr(f"Changelog not available for version '{current_module_version.name}'."),
+            )
+            return
 
         QDesktopServices.openUrl(QUrl(current_module_version.html_url))
 
-    def _serviceChanged(self, index=None):
+    def __serviceChanged(self, index=None):
         if self.db_services_comboBox.currentText() == "":
             self.db_database_label.setText(self.tr("No database"))
             font = self.db_database_label.font()
@@ -311,7 +335,7 @@ class MainDialog(QDialog, DIALOG_UI):
 
         self.__database_connection.cursor().execute("SELECT current_database()")
 
-    def _createDatabaseClicked(self):
+    def __createDatabaseClicked(self):
         databaseCreateDialog = DatabaseCreateDialog(
             selected_service=self.db_services_comboBox.currentText(), parent=self
         )
@@ -319,20 +343,20 @@ class MainDialog(QDialog, DIALOG_UI):
         if databaseCreateDialog.exec_() == QDialog.Rejected:
             return
 
-        self._loadDatabaseInformations()
+        self.__loadDatabaseInformations()
 
         # Select the created service
         created_service_name = databaseCreateDialog.created_service_name()
         self.db_services_comboBox.setCurrentText(created_service_name)
 
-    def _duplicateDatabaseClicked(self):
+    def __duplicateDatabaseClicked(self):
         databaseDuplicateDialog = DatabaseDuplicateDialog(
             selected_service=self.db_services_comboBox.currentText(), parent=self
         )
         if databaseDuplicateDialog.exec_() == QDialog.Rejected:
             return
 
-    def _installModuleClicked(self):
+    def __installModuleClicked(self):
 
         if self.__database_connection is None:
             QMessageBox.critical(
@@ -381,7 +405,7 @@ class MainDialog(QDialog, DIALOG_UI):
             )
             return
             
-    def _createAndGrantRolesClicked(self):
+    def __createAndGrantRolesClicked(self):
 
         if self.__pum_config is None:
             QMessageBox.critical(
