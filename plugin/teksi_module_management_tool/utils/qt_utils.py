@@ -28,3 +28,37 @@ class OverrideCursor:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         QApplication.restoreOverrideCursor()
+
+class QtUtils:
+
+    @staticmethod
+    def setForegroundColor(widget, color):
+        """
+        Set the foreground color of a widget.
+        :param widget: The widget to set the foreground color for.
+        :param color: The color to set.
+        """
+        palette = widget.palette()
+        palette.setColor(widget.foregroundRole(), color)
+        widget.setPalette(palette)
+    
+    @staticmethod
+    def resetForegroundColor(widget):
+        """
+        Reset the foreground color of a widget to the default.
+        :param widget: The widget to reset the foreground color for.
+        """
+        palette = widget.palette()
+        palette.setColor(widget.foregroundRole(), QApplication.style().standardPalette().color(palette.WindowText))
+        widget.setPalette(palette)
+
+    @staticmethod
+    def setFontItalic(widget, italic):
+        """
+        Set the font of a widget to italic.
+        :param widget: The widget to set the font for.
+        """
+        font = widget.font()
+        font.setItalic(italic)
+        widget.setFont(font)
+

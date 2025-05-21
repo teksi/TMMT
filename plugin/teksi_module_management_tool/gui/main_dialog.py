@@ -34,13 +34,14 @@ from teksi_module_management_tool.gui.database_create_dialog import DatabaseCrea
 from teksi_module_management_tool.gui.database_duplicate_dialog import (
     DatabaseDuplicateDialog,
 )
-from teksi_module_management_tool.gui.service_edit_dialog import ServiceEditDialog
+from teksi_module_management_tool.core.package_prepare_task import PackagePrepareTask
 from teksi_module_management_tool.libs import pgserviceparser
 from teksi_module_management_tool.libs.pum.config import PumConfig
 from teksi_module_management_tool.libs.pum.schema_migrations import SchemaMigrations
 from teksi_module_management_tool.libs.pum.upgrader import Upgrader
 from teksi_module_management_tool.utils.plugin_utils import PluginUtils
-from teksi_module_management_tool.utils.qt_utils import OverrideCursor
+from teksi_module_management_tool.utils.qt_utils import OverrideCursor, QtUtils
+
 
 DIALOG_UI = PluginUtils.get_ui_class("main_dialog.ui")
 
@@ -49,6 +50,9 @@ class MainDialog(QDialog, DIALOG_UI):
 
     MODULE_VERSION_SPECIAL_LOAD_FROM_ZIP = "Load from ZIP"
     MODULE_VERSION_SPECIAL_LOAD_DEVELOPMENT = "Load development versions"
+
+    COLOR_GREEN = QColor(12, 167, 137)
+    COLOR_WARNING = QColor(255, 165, 0)
 
     def __init__(self, modules_registry, parent=None):
         QDialog.__init__(self, parent)
@@ -70,23 +74,29 @@ class MainDialog(QDialog, DIALOG_UI):
         # Init GUI Database
         self.__initGuiDatabase()
 
+        # Init GUI Module Info
+        self.__initGuiModuleInfo()
+
+        self.__packagePrepareTask = PackagePrepareTask(self)
+        self.__packagePrepareTask.finished.connect(self.__packagePrepareTaskFinished)
+        self.__packagePrepareTask.signalPackagingProgress.connect(self.__packagePrepareTaskProgress)
+
     def __helpRequested(self):
         QDesktopServices.openUrl(QUrl("https://github.com/teksi/TMMT"))
 
     def __initGuiModules(self):
         self.module_module_comboBox.clear()
-        self.module_module_comboBox.addItem(self.tr("Plese select a module"), None)
+        self.module_module_comboBox.addItem(self.tr("Please select a module"), None)
         for module in self.__modules_registry.modules():
             self.module_module_comboBox.addItem(module.name, module)
 
         self.module_latestVersion_label.setText("")
-        module_latestVersion_label_palette = self.module_latestVersion_label.palette()
-        module_latestVersion_label_palette.setColor(
-            self.module_latestVersion_label.foregroundRole(), QColor(12, 167, 137)
+        QtUtils.setForegroundColor(
+            self.module_latestVersion_label, self.COLOR_GREEN
         )
-        self.module_latestVersion_label.setPalette(module_latestVersion_label_palette)
 
         self.module_version_comboBox.clear()
+        self.module_version_comboBox.addItem(self.tr("Please select a version"), None)
 
         self.module_zipPackage_groupBox.setVisible(False)
 
@@ -96,6 +106,10 @@ class MainDialog(QDialog, DIALOG_UI):
         self.module_browseZip_toolButton.clicked.connect(self.__moduleBrowseZipClicked)
 
     def __initGuiDatabase(self):
+        self.db_database_label.setText(self.tr("No database"))
+        QtUtils.setForegroundColor(self.db_database_label, self.COLOR_WARNING)
+        QtUtils.setFontItalic(self.db_database_label, True)
+
         self.__loadDatabaseInformations()
         self.db_services_comboBox.currentIndexChanged.connect(self.__serviceChanged)
 
@@ -103,22 +117,26 @@ class MainDialog(QDialog, DIALOG_UI):
 
         actionCreateDb = QAction(self.tr("Create database"), db_operations_menu)
         self.__actionDuplicateDb = QAction(self.tr("Duplicate database"), db_operations_menu)
-        actionEditService = QAction(self.tr("Edit service"), db_operations_menu)
+        actionCreateAndGrantRoles = QAction(self.tr("Create and grant roles"), db_operations_menu)
 
         actionCreateDb.triggered.connect(self.__createDatabaseClicked)
         self.__actionDuplicateDb.triggered.connect(self.__duplicateDatabaseClicked)
-        actionEditService.triggered.connect(self.__editServiceClicked)
+        actionCreateAndGrantRoles.triggered.connect(self.__createAndGrantRolesClicked)
 
         db_operations_menu.addAction(actionCreateDb)
         db_operations_menu.addAction(self.__actionDuplicateDb)
-        db_operations_menu.addAction(actionEditService)
+        db_operations_menu.addAction(actionCreateAndGrantRoles)
 
         self.db_operations_toolButton.setMenu(db_operations_menu)
 
-        self.db_install_pushButton.setDisabled(True)
-        self.db_install_pushButton.clicked.connect(self.__installModuleClicked)
+    def __initGuiModuleInfo(self):
+        QtUtils.setForegroundColor(self.moduleInfo_NoModuleFound_label, self.COLOR_WARNING)
+        QtUtils.setFontItalic(self.moduleInfo_NoModuleFound_label, True)
 
-        self.db_createAndGrantRoles_pushButton.clicked.connect(self.__createAndGrantRolesClicked)
+        self.moduleInfo_stackedWidget.setCurrentWidget(self.moduleInfo_stackedWidget_pageInstall)
+
+        self.moduleInfo_install_pushButton.clicked.connect(self.__installModuleClicked)
+        self.moduleInfo_upgrade_pushButton.clicked.connect(self.__upgradeModuleClicked)
 
     def __loadDatabaseInformations(self):
         self.db_servicesConfigFilePath_label.setText(pgserviceparser.conf_path().as_posix())
@@ -144,6 +162,7 @@ class MainDialog(QDialog, DIALOG_UI):
 
         self.module_latestVersion_label.setText("")
         self.module_version_comboBox.clear()
+        self.module_version_comboBox.addItem(self.tr("Please select a version"), None)
 
         if self.__current_module is None:
             return
@@ -188,6 +207,15 @@ class MainDialog(QDialog, DIALOG_UI):
         current_module_version = self.module_version_comboBox.currentData()
         if current_module_version is None:
             return
+        
+        self.__pum_config = None
+        self.__data_model_dir = None
+
+        if self.__packagePrepareTask.isRunning():
+            self.__packagePrepareTask.cancel()
+            self.__packagePrepareTask.wait()
+
+        self.__packagePrepareTask.startFromModuleVersion(current_module_version)
 
     def __loadDevelopmentVersions(self):
         if self.__current_module is None:
@@ -234,27 +262,29 @@ class MainDialog(QDialog, DIALOG_UI):
 
         self.__pum_config = None
         self.__data_model_dir = None
-        self.db_install_pushButton.setDisabled(True)
 
-        temp_dir = PluginUtils.plugin_temp_path()
+        if self.__packagePrepareTask.isRunning():
+            self.__packagePrepareTask.cancel()
+            self.__packagePrepareTask.wait()
 
-        package_dir = os.path.join(temp_dir, QFileInfo(filename).baseName())
-        if os.path.exists(package_dir):
-            shutil.rmtree(package_dir)
+        self.__packagePrepareTask.startFromZip(filename)
 
-        # Unzip the file to plugin temp dir
-        try:
-            with zipfile.ZipFile(filename, "r") as zip_ref:
-                zip_ref.extractall(temp_dir)
-        except zipfile.BadZipFile:
-            raise Exception(self.tr(f"The selected file '{filename}' is not a valid zip archive."))
+    def __packagePrepareTaskFinished(self):
 
-        self.__data_model_dir = os.path.join(package_dir, "datamodel")
+        if self.__packagePrepareTask.lastError is not None:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr(f"Can't load module package:\n{self.__packagePrepareTask.lastError}"),
+            )
+            return
+
+        self.__data_model_dir = os.path.join(self.__packagePrepareTask, "datamodel")
         pumConfigFilename = os.path.join(self.__data_model_dir, ".pum-config.yaml")
         if not os.path.exists(pumConfigFilename):
             raise Exception(
                 self.tr(
-                    f"The selected file '{filename}' does not contain a valid .pum-config.yaml file."
+                    f"The selected file '{self.__packagePrepareTask.zip_file}' does not contain a valid .pum-config.yaml file."
                 )
             )
 
@@ -276,12 +306,16 @@ class MainDialog(QDialog, DIALOG_UI):
         if sm.exists(self.__database_connection):
             baseline_version = sm.baseline(self.__database_connection)
             self.db_moduleInfo_label.setText(self.tr(f"Version {baseline_version} found"))
-            self.db_install_pushButton.setText(self.tr(f"Upgrade to {migrationVersion}"))
+            self.db_upgrade_pushButton.setText(self.tr(f"Upgrade to {migrationVersion}"))
+
+            self.moduleInfo_stackedWidget.setCurrentWidget(self.moduleInfo_stackedWidget_pageUpgrade)
         else:
             self.db_moduleInfo_label.setText(self.tr("No module found"))
             self.db_install_pushButton.setText(self.tr(f"Install {migrationVersion}"))
+            self.moduleInfo_stackedWidget.setCurrentWidget(self.moduleInfo_stackedWidget_pageInstall)
 
-        self.db_install_pushButton.setEnabled(True)
+    def __packagePrepareTaskProgress(self, progress):
+        print(f"Progress: {progress}")
 
     def __seeChangeLogClicked(self):
         current_module_version = self.module_version_comboBox.currentData()
@@ -315,9 +349,8 @@ class MainDialog(QDialog, DIALOG_UI):
     def __serviceChanged(self, index=None):
         if self.db_services_comboBox.currentText() == "":
             self.db_database_label.setText(self.tr("No database"))
-            font = self.db_database_label.font()
-            font.setItalic(True)
-            self.db_database_label.setFont(font)
+            QtUtils.setForegroundColor(self.db_database_label, self.COLOR_WARNING)
+            QtUtils.setFontItalic(self.db_database_label, True)
 
             self.__actionDuplicateDb.setDisabled(True)
             return
@@ -329,17 +362,15 @@ class MainDialog(QDialog, DIALOG_UI):
 
         if service_database is None:
             self.db_database_label.setText(self.tr("No database provided by the service"))
-            font = self.db_database_label.font()
-            font.setItalic(True)
-            self.db_database_label.setFont(font)
+            QtUtils.setForegroundColor(self.db_database_label, self.COLOR_WARNING)
+            QtUtils.setFontItalic(self.db_database_label, True)
 
             self.__actionDuplicateDb.setDisabled(True)
             return
 
         self.db_database_label.setText(service_database)
-        font = self.db_database_label.font()
-        font.setItalic(False)
-        self.db_database_label.setFont(font)
+        QtUtils.resetForegroundColor(self.db_database_label)
+        QtUtils.setFontItalic(self.db_database_label, False)
 
         self.__actionDuplicateDb.setEnabled(True)
 
@@ -381,15 +412,24 @@ class MainDialog(QDialog, DIALOG_UI):
         if databaseDuplicateDialog.exec_() == QDialog.Rejected:
             return
 
-    def __editServiceClicked(self):
-        selected_service_name = self.db_services_comboBox.currentText()
-        serviceEditDialog = ServiceEditDialog(selected_service=selected_service_name, parent=self)
-        if serviceEditDialog.exec_() == QDialog.Accepted:
-            # Reload database services
-            self.__loadDatabaseInformations()
-            self.db_services_comboBox.setCurrentText(selected_service_name)
-
     def __installModuleClicked(self):
+
+        if self.__current_module is None:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr("Please select a module first."),
+            )
+            return
+        
+        current_module_version = self.module_version_comboBox.currentData()
+        if current_module_version is None:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr("Please select a module version first."),
+            )
+            return
 
         if self.__database_connection is None:
             QMessageBox.critical(
@@ -439,6 +479,42 @@ class MainDialog(QDialog, DIALOG_UI):
             )
             return
 
+    def __upgradeModuleClicked(self):
+        if self.__current_module is None:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr("Please select a module first."),
+            )
+            return
+        
+        current_module_version = self.module_version_comboBox.currentData()
+        if current_module_version is None:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr("Please select a module version first."),
+            )
+            return
+
+        if self.__database_connection is None:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr("Please select a database service first."),
+            )
+            return
+
+        if self.__pum_config is None:
+            QMessageBox.critical(
+                self,
+                self.tr("Error"),
+                self.tr("No valid module available."),
+            )
+            return
+        
+        raise NotImplementedError("Upgrade module is not implemented yet")
+
     def __createAndGrantRolesClicked(self):
 
         if self.__pum_config is None:
@@ -448,21 +524,5 @@ class MainDialog(QDialog, DIALOG_UI):
                 self.tr("No valid module available."),
             )
             return
-
-        with OverrideCursor(Qt.WaitCursor):
-            try:
-                service_name = self.db_services_comboBox.currentText()
-                upgrader = Upgrader(
-                    pg_service=service_name,
-                    config=self.__pum_config,
-                    dir=self.__data_model_dir,
-                    parameters={"SRID": 2056},
-                )
-                upgrader.create_and_grant_roles()
-            except Exception as exception:
-                QMessageBox.critical(
-                    self,
-                    self.tr("Error"),
-                    self.tr(f"Can't create and grant roles:\n{exception}"),
-                )
-                return
+        
+        raise NotImplementedError("Create and grant roles is not implemented yet")

@@ -49,6 +49,10 @@ class Module:
         mainVersion = ModuleVersion(organisation=self.organisation, repository=self.repository, json_payload=str(), type=ModuleVersion.Type.BRANCH, name="main", branch="main")
         self.development_versions.append(mainVersion)
 
+        # Create version for the pum-integration branch
+        pumIntegrationVersion = ModuleVersion(organisation=self.organisation, repository=self.repository, json_payload=str(), type=ModuleVersion.Type.BRANCH, name="pum-integration", branch="pum-integration")
+        self.development_versions.append(pumIntegrationVersion)
+
         # Load versions from pull requests
         r = requests.get(
             f"https://api.github.com/repos/{self.organisation}/{self.repository}/pulls"
