@@ -1,6 +1,7 @@
-from qgis.PyQt.QtCore import QDateTime, Qt
-import requests
 import os
+
+import requests
+from qgis.PyQt.QtCore import QDateTime, Qt
 
 
 class ModuleVersion:
@@ -11,7 +12,15 @@ class ModuleVersion:
         BRANCH = "branch"
         PULL_REQUEST = "pull_request"
 
-    def __init__(self, organisation, repository, json_payload: dict, type = Type.RELEASE, name=None, branch=None):
+    def __init__(
+        self,
+        organisation,
+        repository,
+        json_payload: dict,
+        type=Type.RELEASE,
+        name=None,
+        branch=None,
+    ):
 
         self.type = type
         self.name = name
@@ -28,8 +37,15 @@ class ModuleVersion:
             self.__parse_pull_request(json_payload)
         else:
             raise ValueError(f"Unknown type '{type}'")
-        
-        self.download_url = f"https://github.com/{organisation}/{repository}/archive/refs/heads/{self.branch}.zip"
+
+        type = "heads"
+        if self.type == ModuleVersion.Type.RELEASE:
+            type = "tags"
+
+        # self.download_url = f"https://github.com/{organisation}/{repository}/archive/refs/{type}/{self.branch}.zip"
+        self.download_url = (
+            f"https://codeload.github.com/teksi/wastewater/zip/refs/tags/{self.branch}"
+        )
 
     def display_name(self):
         if self.prerelease:
@@ -69,4 +85,3 @@ class ModuleVersion:
         self.created_at = QDateTime.fromString(json_payload["created_at"], Qt.ISODate)
         self.prerelease = False
         self.html_url = json_payload["html_url"]
-
