@@ -53,8 +53,8 @@ class MainDialog(QDialog, DIALOG_UI):
     def __init__(self, modules_registry, parent=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
-
-        self.close_pushButton.clicked.connect(self.accept)
+        self.buttonBox.rejected.connect(self.accept)
+        self.buttonBox.helpRequested.connect(self.__helpRequested)
 
         self.__modules_registry = modules_registry
         self.__current_module = None
@@ -69,6 +69,9 @@ class MainDialog(QDialog, DIALOG_UI):
 
         # Init GUI Database
         self.__initGuiDatabase()
+
+    def __helpRequested(self):
+        QDesktopServices.openUrl(QUrl("https://github.com/teksi/TMMT"))
 
     def __initGuiModules(self):
         self.module_module_comboBox.clear()

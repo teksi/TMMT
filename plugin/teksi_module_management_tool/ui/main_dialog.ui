@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>608</width>
-    <height>932</height>
+    <width>1572</width>
+    <height>1023</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,16 +15,9 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="6" column="1">
-    <widget class="QPushButton" name="close_pushButton">
-     <property name="text">
-      <string>Close</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QPushButton" name="help_pushButton">
-     <property name="text">
-      <string>Help</string>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close|QDialogButtonBox::Help</set>
      </property>
     </widget>
    </item>
@@ -201,7 +194,7 @@
              <string>...</string>
             </property>
             <property name="popupMode">
-             <enum>QToolButton::MenuButtonPopup</enum>
+             <enum>QToolButton::InstantPopup</enum>
             </property>
            </widget>
           </item>
@@ -423,39 +416,6 @@
       <attribute name="title">
        <string>Log</string>
       </attribute>
-      <widget class="QScrollArea" name="scrollArea">
-       <property name="geometry">
-        <rect>
-         <x>9</x>
-         <y>9</y>
-         <width>521</width>
-         <height>561</height>
-        </rect>
-       </property>
-       <property name="widgetResizable">
-        <bool>true</bool>
-       </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>521</width>
-          <height>561</height>
-         </rect>
-        </property>
-        <widget class="QTextBrowser" name="textBrowser">
-         <property name="geometry">
-          <rect>
-           <x>-5</x>
-           <y>-9</y>
-           <width>531</width>
-           <height>571</height>
-          </rect>
-         </property>
-        </widget>
-       </widget>
-      </widget>
      </widget>
     </widget>
    </item>
