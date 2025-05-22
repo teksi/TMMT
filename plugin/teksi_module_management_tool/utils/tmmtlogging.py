@@ -30,7 +30,7 @@ import logging
 from qgis.core import QgsApplication, QgsMessageLog
 
 
-class TwwQgsLogHandler(logging.Handler):
+class TmmtQgsLogHandler(logging.Handler):
     """
     A class acting as a translator between pythons log system and the QGIS log
     system.

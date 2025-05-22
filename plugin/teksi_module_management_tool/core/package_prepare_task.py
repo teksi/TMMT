@@ -1,6 +1,7 @@
 import os
 import shutil
 import zipfile
+import logging
 
 import requests
 from qgis.PyQt.QtCore import QFileInfo, QThread, pyqtSignal
@@ -85,36 +86,27 @@ class PackagePrepareTask(QThread):
 
         self.__checkForCanceled()
 
-        # print(f"Response size: {len(response.content)}")
-
-        # Sizes in bytes.
-        total_size = int(response.headers.get("content-length", 0))
+        
+        logging.info(f"Downloading from '{url}' to '{self.zip_file}'")
         data_size = 0
-
-        print(f"Downloading '{total_size}' bytes from '{url}' to '{self.zip_file}'")
-
         with open(self.zip_file, "wb") as file:
-            print(f"Writing to '{self.zip_file}'")
             for data in response.iter_content(chunk_size=None):
 
                 self.__checkForCanceled()
 
                 data_size += len(data)
-
-                if total_size > 0:
-                    self.signalPackagingProgress.emit(data_size / total_size)
+                # print(f"Recived '{data_size}' bytes")
+                # self.signalPackagingProgress.emit(data_size)
 
                 file.write(data)
 
-        if total_size != data_size:
-            raise RuntimeError(f"Could not download package from '{url}'")
-
     def __extract_zip_file(self, zip_file):
         temp_dir = PluginUtils.plugin_temp_path()
-
         self.package_dir = os.path.join(temp_dir, QFileInfo(zip_file).baseName())
         if os.path.exists(self.package_dir):
             shutil.rmtree(self.package_dir)
+
+        logging.info(f"Extracting package '{zip_file}' to '{self.package_dir}'")
 
         # Unzip the file to plugin temp dir
         try:

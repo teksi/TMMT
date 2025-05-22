@@ -74,3 +74,4 @@ class PluginUtils:
     def get_plugin_version():
         ini_text = QSettings(PluginUtils.get_metadata_file_path(), QSettings.IniFormat)
         return ini_text.value("version")
+    

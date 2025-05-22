@@ -279,12 +279,12 @@ class MainDialog(QDialog, DIALOG_UI):
             )
             return
 
-        self.__data_model_dir = os.path.join(self.__packagePrepareTask, "datamodel")
-        pumConfigFilename = os.path.join(self.__data_model_dir, ".pum-config.yaml")
+        self.__data_model_dir = os.path.join(self.__packagePrepareTask.package_dir, "datamodel")
+        pumConfigFilename = os.path.join(self.__data_model_dir, ".pum.yaml")
         if not os.path.exists(pumConfigFilename):
             raise Exception(
                 self.tr(
-                    f"The selected file '{self.__packagePrepareTask.zip_file}' does not contain a valid .pum-config.yaml file."
+                    f"The selected file '{self.__packagePrepareTask.zip_file}' does not contain a valid .pum.yaml file."
                 )
             )
 
