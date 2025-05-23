@@ -28,10 +28,10 @@ from qgis.PyQt.QtCore import QDir, QFileInfo, QUrl
 from qgis.PyQt.QtGui import QDesktopServices, QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
-from .core.module import Module
-from .core.modules_registry import ModulesRegistry
 from .gui.about_dialog import AboutDialog
-from .gui.main_dialog import MainDialog
+from .libs.oqtopus.core.module import Module
+from .libs.oqtopus.core.modules_registry import ModulesRegistry
+from .libs.oqtopus.gui.main_dialog import MainDialog
 from .utils.plugin_utils import PluginUtils
 
 
