@@ -190,6 +190,7 @@ class TMMTPlugin:
 
     def show_main_dialog(self):
         main_dialog = MainDialog(self.modules_registry, self.iface.mainWindow())
+        main_dialog.setWindowTitle(f"{PluginUtils.PLUGIN_NAME}")
         main_dialog.exec_()
 
     def show_logs_folder(self):
