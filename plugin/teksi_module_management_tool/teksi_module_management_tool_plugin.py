@@ -21,17 +21,14 @@
  ***************************************************************************/
 """
 
-import logging
-import logging.handlers
-
-from qgis.PyQt.QtCore import QDir, QFileInfo, QUrl
-from qgis.PyQt.QtGui import QDesktopServices, QIcon
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from .gui.about_dialog import AboutDialog
 from .libs.oqtopus.core.module import Module
 from .libs.oqtopus.core.modules_registry import ModulesRegistry
 from .libs.oqtopus.gui.main_dialog import MainDialog
+from .libs.oqtopus.utils.plugin_utils import PluginUtils as OqtopusPluginUtils
 from .utils.plugin_utils import PluginUtils
 
 
@@ -55,8 +52,7 @@ class TMMTPlugin:
 
         self.__version__ = PluginUtils.get_plugin_version()
 
-        self.logsDirectory = f"{PluginUtils.plugin_root_path()}/logs"
-        self._initLogger()
+        OqtopusPluginUtils.init_logger()
 
         self.actions = []
         self.main_menu_name = self.tr(f"&{PluginUtils.PLUGIN_NAME}")
@@ -194,7 +190,7 @@ class TMMTPlugin:
         main_dialog.exec_()
 
     def show_logs_folder(self):
-        QDesktopServices.openUrl(QUrl.fromLocalFile(self.logsDirectory))
+        PluginUtils.open_logs_folder()
 
     def show_about_dialog(self):
         about_dialog = AboutDialog(self.iface.mainWindow())
@@ -213,28 +209,3 @@ class TMMTPlugin:
             ]
 
         return result_actions[0]
-
-    def _initLogger(self):
-        directory = QDir(self.logsDirectory)
-        if not directory.exists():
-            directory.mkpath(self.logsDirectory)
-
-        if directory.exists():
-            logfile = QFileInfo(directory, "TMMT.log")
-
-            # Handler for files rotation, create one log per day
-            rotationHandler = logging.handlers.TimedRotatingFileHandler(
-                logfile.filePath(), when="midnight", backupCount=10
-            )
-
-            # Configure logging
-            logging.basicConfig(
-                level=logging.DEBUG,
-                format="%(asctime)s %(levelname)-7s %(message)s",
-                handlers=[rotationHandler],
-            )
-        else:
-            logging.error(f"Can't create log files directory '{self.logsDirectory}'.")
-
-        logging.info("")
-        logging.info(f"Starting {PluginUtils.PLUGIN_NAME} plugin version {self.__version__}")
