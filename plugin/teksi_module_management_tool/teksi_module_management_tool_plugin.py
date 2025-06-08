@@ -21,14 +21,23 @@
  ***************************************************************************/
 """
 
+import os
+import sys
+
+libs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "libs"))
+if libs_path not in sys.path:
+    sys.path.insert(0, libs_path)
+
+from pathlib import Path
+
+import yaml
+from oqtopus.core.modules_config import ModulesConfig
+from oqtopus.gui.main_dialog import MainDialog
+from oqtopus.utils.plugin_utils import PluginUtils as OqtopusPluginUtils
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from .gui.about_dialog import AboutDialog
-from .libs.oqtopus.core.module import Module
-from .libs.oqtopus.core.modules_registry import ModulesRegistry
-from .libs.oqtopus.gui.main_dialog import MainDialog
-from .libs.oqtopus.utils.plugin_utils import PluginUtils as OqtopusPluginUtils
 from .utils.plugin_utils import PluginUtils
 
 
@@ -57,15 +66,12 @@ class TMMTPlugin:
         self.actions = []
         self.main_menu_name = self.tr(f"&{PluginUtils.PLUGIN_NAME}")
 
-        self.modules_registry = ModulesRegistry()
-        self.modules_registry.register_module(
-            Module(name="TEKSI Wastewater", organisation="teksi", repository="wastewater")
-        )
-        self.modules_registry.register_module(
-            Module(
-                name="TEKSI District Heating", organisation="teksi", repository="district_heating"
-            )
-        )
+        conf_path = Path(__file__).parent / "default_config.yaml"
+
+        self.modules_config = None
+        with conf_path.open() as f:
+            data = yaml.safe_load(f)
+            self.modules_config = ModulesConfig(**data)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, source_text):
