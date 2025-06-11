@@ -33,7 +33,6 @@ from pathlib import Path
 import yaml
 from oqtopus.core.modules_config import ModulesConfig
 from oqtopus.gui.main_dialog import MainDialog
-from oqtopus.utils.plugin_utils import PluginUtils as OqtopusPluginUtils
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
@@ -60,8 +59,6 @@ class TMMTPlugin:
         self.canvas = iface.mapCanvas()
 
         self.__version__ = PluginUtils.get_plugin_version()
-
-        OqtopusPluginUtils.init_logger()
 
         self.actions = []
         self.main_menu_name = self.tr(f"&{PluginUtils.PLUGIN_NAME}")
