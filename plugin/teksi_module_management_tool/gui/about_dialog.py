@@ -22,7 +22,6 @@
 #
 # ---------------------------------------------------------------------
 
-import os
 
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QPixmap

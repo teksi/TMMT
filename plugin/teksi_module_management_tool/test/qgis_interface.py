@@ -1,4 +1,3 @@
-# coding=utf-8
 """QGIS plugin implementation.
 
 .. note:: This program is free software; you can redistribute it and/or modify
@@ -14,29 +13,32 @@
 
 """
 
-__author__ = 'tim@linfiniti.com'
-__revision__ = '$Format:%H$'
-__date__ = '10/01/2011'
+__author__ = "tim@linfiniti.com"
+__revision__ = "$Format:%H$"
+__date__ = "10/01/2011"
 __copyright__ = (
-    'Copyright (c) 2010 by Ivan Mincik, ivan.mincik@gista.sk and '
-    'Copyright (c) 2011 German Carrillo, geotux_tuxman@linuxmail.org'
-    'Copyright (c) 2014 Tim Sutton, tim@linfiniti.com'
+    "Copyright (c) 2010 by Ivan Mincik, ivan.mincik@gista.sk and "
+    "Copyright (c) 2011 German Carrillo, geotux_tuxman@linuxmail.org"
+    "Copyright (c) 2014 Tim Sutton, tim@linfiniti.com"
 )
 
 import logging
-from qgis.PyQt.QtCore import QObject, pyqtSlot, pyqtSignal
+
 from qgis.core import QgsMapLayerRegistry
 from qgis.gui import QgsMapCanvasLayer
-LOGGER = logging.getLogger('QGIS')
+from qgis.PyQt.QtCore import QObject, pyqtSignal, pyqtSlot
+
+LOGGER = logging.getLogger("QGIS")
 
 
-#noinspection PyMethodMayBeStatic,PyPep8Naming
+# noinspection PyMethodMayBeStatic,PyPep8Naming
 class QgisInterface(QObject):
     """Class to expose QGIS objects and functions to plugins.
 
     This class is here for enabling us to run unit tests only,
     so most methods are simply stubs.
     """
+
     currentLayerChanged = pyqtSignal(QgsMapCanvasLayer)
 
     def __init__(self, canvas):
@@ -47,7 +49,7 @@ class QgisInterface(QObject):
         self.canvas = canvas
         # Set up slots so we can mimic the behaviour of QGIS when layers
         # are added.
-        LOGGER.debug('Initialising canvas...')
+        LOGGER.debug("Initialising canvas...")
         # noinspection PyArgumentList
         QgsMapLayerRegistry.instance().layersAdded.connect(self.addLayers)
         # noinspection PyArgumentList
@@ -58,7 +60,7 @@ class QgisInterface(QObject):
         # For processing module
         self.destCrs = None
 
-    @pyqtSlot('QStringList')
+    @pyqtSlot("QStringList")
     def addLayers(self, layers):
         """Handle layers being added to the registry so they show up in canvas.
 
@@ -67,9 +69,9 @@ class QgisInterface(QObject):
         .. note:: The QgsInterface api does not include this method,
             it is added here as a helper to facilitate testing.
         """
-        #LOGGER.debug('addLayers called on qgis_interface')
-        #LOGGER.debug('Number of layers being added: %s' % len(layers))
-        #LOGGER.debug('Layer Count Before: %s' % len(self.canvas.layers()))
+        # LOGGER.debug('addLayers called on qgis_interface')
+        # LOGGER.debug('Number of layers being added: %s' % len(layers))
+        # LOGGER.debug('Layer Count Before: %s' % len(self.canvas.layers()))
         current_layers = self.canvas.layers()
         final_layers = []
         for layer in current_layers:
@@ -78,9 +80,9 @@ class QgisInterface(QObject):
             final_layers.append(QgsMapCanvasLayer(layer))
 
         self.canvas.setLayerSet(final_layers)
-        #LOGGER.debug('Layer Count After: %s' % len(self.canvas.layers()))
+        # LOGGER.debug('Layer Count After: %s' % len(self.canvas.layers()))
 
-    @pyqtSlot('QgsMapLayer')
+    @pyqtSlot("QgsMapLayer")
     def addLayer(self, layer):
         """Handle a layer being added to the registry so it shows up in canvas.
 
@@ -92,7 +94,6 @@ class QgisInterface(QObject):
         .. note: The addLayer method was deprecated in QGIS 1.8 so you should
                  not need this method much.
         """
-        pass
 
     @pyqtSlot()
     def removeAllLayers(self):
@@ -108,19 +109,15 @@ class QgisInterface(QObject):
 
     def zoomFull(self):
         """Zoom to the map full extent."""
-        pass
 
     def zoomToPrevious(self):
         """Zoom to previous view extent."""
-        pass
 
     def zoomToNext(self):
         """Zoom to next view extent."""
-        pass
 
     def zoomToActiveLayer(self):
         """Zoom to extent of active layer."""
-        pass
 
     def addVectorLayer(self, path, base_name, provider_key):
         """Add a vector layer.
@@ -134,7 +131,6 @@ class QgisInterface(QObject):
         :param provider_key: Provider key e.g. 'ogr'
         :type provider_key: str
         """
-        pass
 
     def addRasterLayer(self, path, base_name):
         """Add a raster layer given a raster layer file name
@@ -145,7 +141,6 @@ class QgisInterface(QObject):
         :param base_name: Base name for layer.
         :type base_name: str
         """
-        pass
 
     def activeLayer(self):
         """Get pointer to the active layer (layer selected in the legend)."""
@@ -160,7 +155,6 @@ class QgisInterface(QObject):
         :param action: Action to add to the toolbar.
         :type action: QAction
         """
-        pass
 
     def removeToolBarIcon(self, action):
         """Remove an action (icon) from the plugin toolbar.
@@ -168,7 +162,6 @@ class QgisInterface(QObject):
         :param action: Action to add to the toolbar.
         :type action: QAction
         """
-        pass
 
     def addToolBar(self, name):
         """Add toolbar with specified name.
@@ -176,7 +169,6 @@ class QgisInterface(QObject):
         :param name: Name for the toolbar.
         :type name: str
         """
-        pass
 
     def mapCanvas(self):
         """Return a pointer to the map canvas."""
@@ -187,7 +179,6 @@ class QgisInterface(QObject):
 
         In case of QGIS it returns an instance of QgisApp.
         """
-        pass
 
     def addDockWidget(self, area, dock_widget):
         """Add a dock widget to the main window.
@@ -198,7 +189,6 @@ class QgisInterface(QObject):
         :param dock_widget: A dock widget to add to the UI.
         :type dock_widget: QDockWidget
         """
-        pass
 
     def legendInterface(self):
         """Get the legend."""

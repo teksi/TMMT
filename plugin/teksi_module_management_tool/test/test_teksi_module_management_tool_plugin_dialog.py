@@ -1,4 +1,3 @@
-# coding=utf-8
 """Dialog test.
 
 .. note:: This program is free software; you can redistribute it and/or modify
@@ -8,17 +7,16 @@
 
 """
 
-__author__ = 'info@teksi.ch'
-__date__ = '2024-08-28'
-__copyright__ = 'Copyright 2024, TEKSI'
+__author__ = "info@teksi.ch"
+__date__ = "2024-08-28"
+__copyright__ = "Copyright 2024, TEKSI"
 
 import unittest
 
-from qgis.PyQt.QtGui import QDialogButtonBox, QDialog
-
+from qgis.PyQt.QtGui import QDialog, QDialogButtonBox
 from teksi_module_management_tool_plugin_dialog import TMMTPluginDialog
-
 from utilities import get_qgis_app
+
 QGIS_APP = get_qgis_app()
 
 
@@ -48,8 +46,8 @@ class TMMTPluginDialogTest(unittest.TestCase):
         result = self.dialog.result()
         self.assertEqual(result, QDialog.Rejected)
 
+
 if __name__ == "__main__":
-    suite = unittest.makeSuite(TMMTPluginDialogTest)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TMMTPluginDialogTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-

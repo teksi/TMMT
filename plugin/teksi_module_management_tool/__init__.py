@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
  TMMTPlugin
@@ -33,4 +32,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     """
     #
     from .teksi_module_management_tool_plugin import TMMTPlugin
+
     return TMMTPlugin(iface)
