@@ -188,7 +188,7 @@ class TMMTPlugin:
             self.iface.removeToolBarIcon(action)
 
     def show_main_dialog(self):
-        main_dialog = MainDialog(self.modules_registry, self.iface.mainWindow())
+        main_dialog = MainDialog(self.modules_config, self.iface.mainWindow())
         main_dialog.setWindowTitle(f"{PluginUtils.PLUGIN_NAME}")
         main_dialog.exec_()
 
