@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
  TMMTPlugin
@@ -22,17 +21,23 @@
  ***************************************************************************/
 """
 
-import logging
 import os
+import sys
 
-from qgis.core import Qgis, QgsApplication
-from qgis.PyQt.QtCore import QLocale, QSettings, Qt
+libs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "libs"))
+if libs_path not in sys.path:
+    sys.path.insert(0, libs_path)
+
+from pathlib import Path
+
+import yaml
+from oqtopus.core.modules_config import ModulesConfig
+from oqtopus.gui.main_dialog import MainDialog
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QApplication, QMessageBox, QToolBar
-from qgis.utils import qgsfunction
+from qgis.PyQt.QtWidgets import QAction, QApplication
 
-
-from .gui.tmmt_dialog import TMMTPluginDialog
+from .gui.about_dialog import AboutDialog
+from .utils.plugin_utils import PluginUtils
 
 
 class TMMTPlugin:
@@ -53,14 +58,17 @@ class TMMTPlugin:
         self.iface = iface
         self.canvas = iface.mapCanvas()
 
-        #self.initLogger()
-        # Declare instance attributes
-        self.actions = []
-        self.menu = self.tr(u'&TEKSI Module Management Tool (TMMT)')
+        self.__version__ = PluginUtils.get_plugin_version()
 
-        # Check if plugin was started the first time in current QGIS session
-        # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
+        self.actions = []
+        self.main_menu_name = self.tr(f"&{PluginUtils.PLUGIN_NAME}")
+
+        conf_path = Path(__file__).parent / "default_config.yaml"
+
+        self.modules_config = None
+        with conf_path.open() as f:
+            data = yaml.safe_load(f)
+            self.modules_config = ModulesConfig(**data)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, source_text):
@@ -71,8 +79,8 @@ class TMMTPlugin:
         :return: The translated text
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QApplication.translate('TMMTPlugin', source_text)
-    
+        return QApplication.translate("TMMTPlugin", source_text)
+
     def add_action(
         self,
         icon_path,
@@ -83,7 +91,8 @@ class TMMTPlugin:
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
-        parent=None):
+        parent=None,
+    ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -139,9 +148,7 @@ class TMMTPlugin:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToDatabaseMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToMenu(self.main_menu_name, action)
 
         self.actions.append(action)
 
@@ -149,42 +156,59 @@ class TMMTPlugin:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-
-        icon_path = ':/plugins/teksi_module_management_tool_plugin/icon.png'
         self.add_action(
-            icon_path,
-            text=self.tr(u'TMMT'),
-            callback=self.run,
-            parent=self.iface.mainWindow())
+            icon_path=PluginUtils.get_plugin_icon_path("tmmt-logo.png"),
+            text=self.tr("Show &main dialog"),
+            callback=self.show_main_dialog,
+            parent=self.iface.mainWindow(),
+        )
+        self.add_action(
+            icon_path=None,
+            text=self.tr("Show &log folder"),
+            callback=self.show_logs_folder,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False,
+        )
+        self.add_action(
+            icon_path=PluginUtils.get_plugin_icon_path("tmmt-logo.png"),
+            text=self.tr("&About"),
+            callback=self.show_about_dialog,
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False,
+        )
 
-        # will be set False in run()
-        self.first_start = True
-
+        self._get_main_menu_action().setIcon(
+            PluginUtils.get_plugin_icon("tmmt-logo.png"),
+        )
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginDatabaseMenu(
-                self.tr(u'&TEKSI Module Management Tool (TMMT)'),
-                action)
+            self.iface.removePluginMenu(self.main_menu_name, action)
             self.iface.removeToolBarIcon(action)
 
+    def show_main_dialog(self):
+        main_dialog = MainDialog(self.modules_config, self.iface.mainWindow())
+        main_dialog.setWindowTitle(f"{PluginUtils.PLUGIN_NAME}")
+        main_dialog.exec_()
 
-    def run(self):
-        """Run method that performs all the real work"""
+    def show_logs_folder(self):
+        PluginUtils.open_logs_folder()
 
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-            self.dlg = TMMTPluginDialog()
+    def show_about_dialog(self):
+        about_dialog = AboutDialog(self.iface.mainWindow())
+        about_dialog.exec_()
 
-        # show the dialog
-        self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec_()
-        # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+    def _get_main_menu_action(self):
+        actions = self.iface.pluginMenu().actions()
+        result_actions = [action for action in actions if action.text() == self.main_menu_name]
+
+        # OSX does not support & in the menu title
+        if not result_actions:
+            result_actions = [
+                action
+                for action in actions
+                if action.text() == self.main_menu_name.replace("&", "")
+            ]
+
+        return result_actions[0]

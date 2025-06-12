@@ -27,7 +27,7 @@ tags=database
 
 homepage=https://www.teksi.ch/
 category=Database
-icon=icon.png
+icon=icons/tmmt-logo.png
 # experimental flag
 experimental=True
 
@@ -44,4 +44,3 @@ Category of the plugin: Raster, Vector, Database or Web
 
 # If the plugin can run on QGIS Server.
 server=False
-
