@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Remove when oqtopus is available on PyPI
-pip install --target plugin/teksi_module_management_tool/libs git+https://github.com/opengisch/oqtopus.git
+pip install --target plugin/teksi_module_management_tool/libs git+https://github.com/opengisch/oqtopus.git@0.1.7
 exit 0
 
 pip download -r requirements.txt --only-binary :all: -d temp/
