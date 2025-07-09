@@ -1,1 +1,2 @@
-oqtopus
+oqtopus==0.1.16
+pum>=1.1.12,<2.0.0
