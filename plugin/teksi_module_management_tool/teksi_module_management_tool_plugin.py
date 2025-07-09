@@ -23,21 +23,22 @@
 
 import os
 import sys
-
-libs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "libs"))
-if libs_path not in sys.path:
-    sys.path.insert(0, libs_path)
-
 from pathlib import Path
 
 import yaml
-from oqtopus.core.modules_config import ModulesConfig
-from oqtopus.gui.main_dialog import MainDialog
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from .gui.about_dialog import AboutDialog
 from .utils.plugin_utils import PluginUtils
+
+libs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "libs"))
+if libs_path not in sys.path:
+    sys.path.insert(0, libs_path)
+
+import oqtopus  # noqa: F401, E402
+from oqtopus.core.modules_config import ModulesConfig  # noqa: E402
+from oqtopus.gui.main_dialog import MainDialog  # noqa: E402
 
 
 class TMMTPlugin:
