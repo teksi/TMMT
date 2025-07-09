@@ -36,6 +36,7 @@ libs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "libs"))
 if libs_path not in sys.path:
     sys.path.insert(0, libs_path)
 
+# Workaround import to avoid error (from oqtopus... module not found)
 import oqtopus  # noqa: F401, E402
 from oqtopus.core.modules_config import ModulesConfig  # noqa: E402
 from oqtopus.gui.main_dialog import MainDialog  # noqa: E402
