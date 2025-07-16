@@ -67,8 +67,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION=${{ github.ref_name }}
-          qgis-plugin-ci release --version ${VERSION} \
-            --no-validation \
+          qgis-plugin-ci --no-validation release ${VERSION} \
             --allow-uncommitted-changes \
             --asset-path teksi_module_management_tool/libs \
             --github-token ${{ secrets.GITHUB_TOKEN }} \
