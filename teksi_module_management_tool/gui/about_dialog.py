@@ -26,6 +26,7 @@
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QDialog
+
 from teksi_module_management_tool.utils.plugin_utils import PluginUtils
 
 DIALOG_UI = PluginUtils.get_ui_class("about_dialog.ui")
