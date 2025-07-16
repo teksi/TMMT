@@ -12,7 +12,7 @@ on:
     branches:
       - main
     paths:
-      - plugin/**
+      - teksi_module_management_tool/**
       - scripts/package-pip-packages.sh
   workflow_dispatch:
 
