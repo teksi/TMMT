@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-for LIB in oqtopus pum; do
+for LIB in oqtopus pum pgserviceparser; do
   DNL=$(git grep $LIB requirements.txt | cut -d: -f2)
   pip download $DNL --no-deps --only-binary :all: -d temp/
 done
