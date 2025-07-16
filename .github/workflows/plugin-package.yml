@@ -46,6 +46,7 @@ jobs:
         run: ./scripts/package-pip-packages.sh
 
       - name: Package
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
         run: |
           VERSION=0.0.0
           qgis-plugin-ci -v package ${VERSION} \
@@ -54,7 +55,19 @@ jobs:
             # --transifex-token "${{ secrets.TX_TOKEN }}"
 
       - uses: actions/upload-artifact@v4
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
         with:
           name: teksi_module_management_tool_dev
           path: plugin/teksi_module_management_tool.0.0.0.zip
           if-no-files-found: error
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION=${{ github.ref_name }}
+          qgis-plugin-ci release ${VERSION} \
+            --allow-uncommitted-changes \
+            --asset-path plugin/teksi_module_management_tool/libs \
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            --osgeo-username ${{ secrets.OSGEO_PLUGIN_USERNAME }} \
+            --osgeo-password ${{ secrets.OSGEO_PLUGIN_PASSWORD }}
