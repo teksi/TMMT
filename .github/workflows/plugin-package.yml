@@ -68,9 +68,9 @@ jobs:
         run: |
           VERSION=${{ github.ref_name }}
           qgis-plugin-ci release ${VERSION} \
+            --no-validation \
             --allow-uncommitted-changes \
             --asset-path teksi_module_management_tool/libs \
             --github-token ${{ secrets.GITHUB_TOKEN }} \
             --osgeo-username ${{ secrets.OSGEO_PLUGIN_USERNAME }} \
-            --osgeo-password ${{ secrets.OSGEO_PLUGIN_PASSWORD }} \
-            --no-validation
+            --osgeo-password ${{ secrets.OSGEO_PLUGIN_PASSWORD }}
