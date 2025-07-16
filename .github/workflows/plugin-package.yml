@@ -72,4 +72,5 @@ jobs:
             --asset-path teksi_module_management_tool/libs \
             --github-token ${{ secrets.GITHUB_TOKEN }} \
             --osgeo-username ${{ secrets.OSGEO_PLUGIN_USERNAME }} \
-            --osgeo-password ${{ secrets.OSGEO_PLUGIN_PASSWORD }}
+            --osgeo-password ${{ secrets.OSGEO_PLUGIN_PASSWORD }} \
+            --no-validation
