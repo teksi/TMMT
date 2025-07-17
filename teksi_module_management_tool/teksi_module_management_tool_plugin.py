@@ -25,7 +25,6 @@ import os
 import sys
 from pathlib import Path
 
-import yaml
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
@@ -38,7 +37,6 @@ if libs_path not in sys.path:
 
 # Workaround import to avoid error (from oqtopus... module not found)
 import oqtopus  # noqa: F401, E402
-from oqtopus.core.modules_config import ModulesConfig  # noqa: E402
 from oqtopus.gui.main_dialog import MainDialog  # noqa: E402
 
 
@@ -183,16 +181,11 @@ class TMMTPlugin:
             self.iface.removeToolBarIcon(action)
 
     def show_main_dialog(self):
-
         conf_path = Path(__file__).parent / "default_config.yaml"
 
-        with conf_path.open() as f:
-            data = yaml.safe_load(f)
-            modules_config = ModulesConfig(**data)
-
-            main_dialog = MainDialog(modules_config, self.iface.mainWindow())
-            main_dialog.setWindowTitle(f"{PluginUtils.PLUGIN_NAME}")
-            main_dialog.exec_()
+        main_dialog = MainDialog(modules_config_path=conf_path, parent=self.iface.mainWindow())
+        main_dialog.setWindowTitle(f"{PluginUtils.PLUGIN_NAME}")
+        main_dialog.exec_()
 
     def show_logs_folder(self):
         PluginUtils.open_logs_folder()
