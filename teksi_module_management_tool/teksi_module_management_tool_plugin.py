@@ -65,13 +65,6 @@ class TMMTPlugin:
         self.actions = []
         self.main_menu_name = self.tr(f"&{PluginUtils.PLUGIN_NAME}")
 
-        conf_path = Path(__file__).parent / "default_config.yaml"
-
-        self.modules_config = None
-        with conf_path.open() as f:
-            data = yaml.safe_load(f)
-            self.modules_config = ModulesConfig(**data)
-
     # noinspection PyMethodMayBeStatic
     def tr(self, source_text):
         """
@@ -190,9 +183,16 @@ class TMMTPlugin:
             self.iface.removeToolBarIcon(action)
 
     def show_main_dialog(self):
-        main_dialog = MainDialog(self.modules_config, self.iface.mainWindow())
-        main_dialog.setWindowTitle(f"{PluginUtils.PLUGIN_NAME}")
-        main_dialog.exec_()
+
+        conf_path = Path(__file__).parent / "default_config.yaml"
+
+        with conf_path.open() as f:
+            data = yaml.safe_load(f)
+            modules_config = ModulesConfig(**data)
+
+            main_dialog = MainDialog(modules_config, self.iface.mainWindow())
+            main_dialog.setWindowTitle(f"{PluginUtils.PLUGIN_NAME}")
+            main_dialog.exec_()
 
     def show_logs_folder(self):
         PluginUtils.open_logs_folder()
