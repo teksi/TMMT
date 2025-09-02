@@ -29,7 +29,7 @@ homepage=https://www.teksi.ch/
 category=Database
 icon=icons/tmmt-logo.png
 # experimental flag
-experimental=True
+experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
