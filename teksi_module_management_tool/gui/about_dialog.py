@@ -27,9 +27,9 @@ from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QDialog
 
-from teksi_module_management_tool.utils.plugin_utils import PluginUtils
+from teksi_module_management_tool.utils.tmmt_plugin_utils import TMMTPluginUtils
 
-DIALOG_UI = PluginUtils.get_ui_class("about_dialog.ui")
+DIALOG_UI = TMMTPluginUtils.get_ui_class("about_dialog.ui")
 
 
 class AboutDialog(QDialog, DIALOG_UI):
@@ -37,7 +37,7 @@ class AboutDialog(QDialog, DIALOG_UI):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        metadata_file_path = PluginUtils.get_metadata_file_path()
+        metadata_file_path = TMMTPluginUtils.get_metadata_file_path()
 
         ini_text = QSettings(metadata_file_path, QSettings.IniFormat)
         version = ini_text.value("version")
@@ -52,4 +52,4 @@ class AboutDialog(QDialog, DIALOG_UI):
         self.aboutLabel.setText(about)
         self.qgisMinimumVersionLabel.setText(qgisMinimumVersion)
 
-        self.iconLabel.setPixmap(QPixmap(PluginUtils.get_plugin_icon_path("tmmt-logo.png")))
+        self.iconLabel.setPixmap(QPixmap(TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png")))
