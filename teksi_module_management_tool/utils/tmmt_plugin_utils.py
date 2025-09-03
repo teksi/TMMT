@@ -24,7 +24,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.uic import loadUiType
 
 
-class PluginUtils:
+class TMMTPluginUtils:
 
     PLUGIN_NAME = "TEKSI Module Management Tool (TMMT)"
 
@@ -37,7 +37,7 @@ class PluginUtils:
 
     @staticmethod
     def plugin_temp_path():
-        plugin_basename = PluginUtils.plugin_root_path().split(os.sep)[-1]
+        plugin_basename = TMMTPluginUtils.plugin_root_path().split(os.sep)[-1]
 
         plugin_temp_dir = os.path.join(
             QStandardPaths.writableLocation(QStandardPaths.TempLocation), plugin_basename
@@ -49,11 +49,11 @@ class PluginUtils:
 
     @staticmethod
     def get_plugin_icon_path(icon_filename):
-        return os.path.join(PluginUtils.plugin_root_path(), "icons", icon_filename)
+        return os.path.join(TMMTPluginUtils.plugin_root_path(), "icons", icon_filename)
 
     @staticmethod
     def get_plugin_icon(icon_filename):
-        return QIcon(PluginUtils.get_plugin_icon_path(icon_filename=icon_filename))
+        return QIcon(TMMTPluginUtils.get_plugin_icon_path(icon_filename=icon_filename))
 
     @staticmethod
     def get_ui_class(ui_file):
@@ -63,14 +63,16 @@ class PluginUtils:
         :type ui_file: str
         """
         os.path.sep.join(ui_file.split("/"))
-        ui_file_path = os.path.abspath(os.path.join(PluginUtils.plugin_root_path(), "ui", ui_file))
+        ui_file_path = os.path.abspath(
+            os.path.join(TMMTPluginUtils.plugin_root_path(), "ui", ui_file)
+        )
         return loadUiType(ui_file_path)[0]
 
     @staticmethod
     def get_metadata_file_path():
-        return os.path.join(PluginUtils.plugin_root_path(), "metadata.txt")
+        return os.path.join(TMMTPluginUtils.plugin_root_path(), "metadata.txt")
 
     @staticmethod
     def get_plugin_version():
-        ini_text = QSettings(PluginUtils.get_metadata_file_path(), QSettings.IniFormat)
+        ini_text = QSettings(TMMTPluginUtils.get_metadata_file_path(), QSettings.IniFormat)
         return ini_text.value("version")

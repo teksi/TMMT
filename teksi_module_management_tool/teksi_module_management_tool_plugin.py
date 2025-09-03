@@ -29,7 +29,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
 
 from .gui.about_dialog import AboutDialog
-from .utils.plugin_utils import PluginUtils
+from .utils.tmmt_plugin_utils import TMMTPluginUtils
 
 libs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "libs"))
 if libs_path not in sys.path:
@@ -38,6 +38,7 @@ if libs_path not in sys.path:
 # Workaround import to avoid error (from oqtopus... module not found)
 import oqtopus  # noqa: F401, E402
 from oqtopus.gui.main_dialog import MainDialog  # noqa: E402
+from oqtopus.utils.plugin_utils import PluginUtils  # noqa: E402
 
 
 class TMMTPlugin:
@@ -58,10 +59,10 @@ class TMMTPlugin:
         self.iface = iface
         self.canvas = iface.mapCanvas()
 
-        self.__version__ = PluginUtils.get_plugin_version()
+        self.__version__ = TMMTPluginUtils.get_plugin_version()
 
         self.actions = []
-        self.main_menu_name = self.tr(f"&{PluginUtils.PLUGIN_NAME}")
+        self.main_menu_name = self.tr(f"&{TMMTPluginUtils.PLUGIN_NAME}")
 
     # noinspection PyMethodMayBeStatic
     def tr(self, source_text):
@@ -150,7 +151,7 @@ class TMMTPlugin:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
         self.add_action(
-            icon_path=PluginUtils.get_plugin_icon_path("tmmt-logo.png"),
+            icon_path=TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png"),
             text=self.tr("Show &main dialog"),
             callback=self.show_main_dialog,
             parent=self.iface.mainWindow(),
@@ -163,7 +164,7 @@ class TMMTPlugin:
             add_to_toolbar=False,
         )
         self.add_action(
-            icon_path=PluginUtils.get_plugin_icon_path("tmmt-logo.png"),
+            icon_path=TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png"),
             text=self.tr("&About"),
             callback=self.show_about_dialog,
             parent=self.iface.mainWindow(),
@@ -171,8 +172,10 @@ class TMMTPlugin:
         )
 
         self._get_main_menu_action().setIcon(
-            PluginUtils.get_plugin_icon("tmmt-logo.png"),
+            TMMTPluginUtils.get_plugin_icon("tmmt-logo.png"),
         )
+
+        PluginUtils.init_logger(f"{PluginUtils.plugin_root_path()}/logs")
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -184,7 +187,7 @@ class TMMTPlugin:
         conf_path = Path(__file__).parent / "default_config.yaml"
 
         main_dialog = MainDialog(modules_config_path=conf_path, parent=self.iface.mainWindow())
-        main_dialog.setWindowTitle(f"{PluginUtils.PLUGIN_NAME}")
+        main_dialog.setWindowTitle(f"{TMMTPluginUtils.PLUGIN_NAME}")
         main_dialog.exec_()
 
     def show_logs_folder(self):
