@@ -186,7 +186,11 @@ class TMMTPlugin:
     def show_main_dialog(self):
         conf_path = Path(__file__).parent / "default_config.yaml"
 
-        main_dialog = MainDialog(modules_config_path=conf_path, parent=self.iface.mainWindow())
+        main_dialog = MainDialog(
+            modules_config_path=conf_path,
+            about_dialog_cls=AboutDialog,
+            parent=self.iface.mainWindow(),
+        )
         main_dialog.setWindowTitle(f"{TMMTPluginUtils.PLUGIN_NAME}")
         main_dialog.exec_()
 
