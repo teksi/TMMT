@@ -5,6 +5,8 @@
 [general]
 name=TEKSI Module Management Tool (TMMT)
 qgisMinimumVersion=3.0
+qgisMaximumVersion=4.99
+supportsQt6=True
 description=This is the management tool for every TEKSI Module installation and upgrade
 version=0.1
 author=TEKSI
@@ -23,7 +25,8 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=database
+tags=teksi,qgis,module,postgres,postgis,project,plugin,installation,management,upgrade
+
 
 homepage=https://www.teksi.ch/
 category=Database
