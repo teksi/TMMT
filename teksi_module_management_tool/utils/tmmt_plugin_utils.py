@@ -74,5 +74,5 @@ class TMMTPluginUtils:
 
     @staticmethod
     def get_plugin_version():
-        ini_text = QSettings(TMMTPluginUtils.get_metadata_file_path(), QSettings.IniFormat)
+        ini_text = QSettings(TMMTPluginUtils.get_metadata_file_path(), QSettings.Format.IniFormat)
         return ini_text.value("version")
