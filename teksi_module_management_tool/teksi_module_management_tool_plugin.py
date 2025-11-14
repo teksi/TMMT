@@ -192,14 +192,14 @@ class TMMTPlugin:
             parent=self.iface.mainWindow(),
         )
         main_dialog.setWindowTitle(f"{TMMTPluginUtils.PLUGIN_NAME}")
-        main_dialog.exec_()
+        main_dialog.exec()
 
     def show_logs_folder(self):
         PluginUtils.open_logs_folder()
 
     def show_about_dialog(self):
         about_dialog = AboutDialog(self.iface.mainWindow())
-        about_dialog.exec_()
+        about_dialog.exec()
 
     def _get_main_menu_action(self):
         actions = self.iface.pluginMenu().actions()
