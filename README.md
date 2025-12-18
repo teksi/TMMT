@@ -1,8 +1,12 @@
 
 # TEKSI Module Management Tool (TMMT)
 
-Here should come the future management tool for TEKSI Modules
+This tool eases the installation (and in future also) the upgrade of any TEKSI module.
 
-This tool will be able to ease the installation and upgrade of any TEKSI module
+The current version allows to install * [ITEKSI Wastewater & GEP](https://github.com/teksi/wastewater/)
+
+![TEKSI Module Management Tool (TMMT)](docs/en/images/tmmt_tww_2025_0_2_success.jpg?raw=true)
 
 The generic module is developped here: https://github.com/opengisch/oqtopus
+
+
