@@ -190,6 +190,7 @@ class TMMTPlugin:
             modules_config_path=conf_path,
             about_dialog_cls=AboutDialog,
             parent=self.iface.mainWindow(),
+            qgis_iface=self.iface,
         )
         main_dialog.setWindowTitle(f"{TMMTPluginUtils.PLUGIN_NAME}")
         main_dialog.exec()
