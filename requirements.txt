@@ -1,3 +1,1 @@
-oqtopus==1.0.1
-pum>=1.1.18,<2.0.0
-pgserviceparser>=2.4.0,<3.0.0
+oqtopus==1.0.6
