@@ -27,7 +27,6 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=teksi,qgis,module,postgres,postgis,project,plugin,installation,management,upgrade
 
-
 homepage=https://www.teksi.ch/
 category=Database
 icon=icons/tmmt-logo.png
