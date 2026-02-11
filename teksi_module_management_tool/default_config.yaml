@@ -1,5 +1,18 @@
 
 modules:
-  - name: "TEKSI Wastewater"
-    organisation: "teksi"
-    repository: "wastewater"
+  - name: TEKSI Wastewater
+    id: tww
+    organisation: teksi
+    repository: wastewater
+    exclude_releases: "plugin-ili-*"  # Example: exclude all v0.x releases
+
+  - name: TEKSI District Heating
+    id: tdh
+    organisation: teksi
+    repository: district_heating
+
+  - name: TEKSI Cemetery
+    id: tce
+    organisation: teksi
+    repository: cemetery
+    experimental: true
