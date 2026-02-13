@@ -57,7 +57,9 @@ jobs:
             --asset-path teksi_module_management_tool/libs \
             # --transifex-token "${{ secrets.TX_TOKEN }}"
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifact for PR testing
+        id: upload-artifact
+        uses: actions/upload-artifact@v6
         if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
         with:
           name: teksi_module_management_tool_dev
