@@ -16,8 +16,9 @@ on:
     paths:
       - teksi_module_management_tool/**
       - scripts/package-pip-packages.sh
+      - .github/workflows/plugin-package.yml
+      - requirements.txt
   workflow_dispatch:
-
 
 jobs:
   plugin-package:
