@@ -1,1 +1,1 @@
-oqtopus==1.0.24
+oqtopus==1.0.14
