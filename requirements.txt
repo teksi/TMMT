@@ -1,1 +1,1 @@
-oqtopus==1.1.1
+oqtopus==1.2.0
