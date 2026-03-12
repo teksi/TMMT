@@ -23,7 +23,6 @@
 # ---------------------------------------------------------------------
 
 
-import os
 
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QFont, QPixmap
@@ -56,17 +55,10 @@ class AboutDialog(QDialog, DIALOG_UI):
 
         self.iconLabel.setPixmap(QPixmap(TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png")))
 
-        # --- Library versions (reuse _lib_version from bundled oqtopus) ---
-        from ..libs.oqtopus.gui.about_dialog import _lib_version
-        from ..libs.oqtopus.utils.plugin_utils import PluginUtils
+        # --- Library versions (reuse get_library_versions from bundled oqtopus) ---
+        from ..libs.oqtopus.gui.about_dialog import get_library_versions
 
-        oqtopus_path = PluginUtils.plugin_root_path()
-        oqtopus_version = _lib_version("oqtopus", oqtopus_path)
-
-        from ..libs import pum as _pum_pkg
-
-        pum_path = os.path.dirname(_pum_pkg.__file__)
-        pum_version = _lib_version("pum", pum_path)
+        lib_versions = get_library_versions()
 
         bold_font = QFont()
         bold_font.setBold(True)
@@ -74,16 +66,10 @@ class AboutDialog(QDialog, DIALOG_UI):
         grid = self.gridLayout_2
         next_row = grid.rowCount()
 
-        oqtopus_label = QLabel("oQtopus version:")
-        oqtopus_label.setFont(bold_font)
-        oqtopus_value = QLabel(oqtopus_version)
-        oqtopus_value.setToolTip(oqtopus_path)
-        grid.addWidget(oqtopus_label, next_row, 0)
-        grid.addWidget(oqtopus_value, next_row, 1)
-
-        pum_label = QLabel("PUM version:")
-        pum_label.setFont(bold_font)
-        pum_value = QLabel(pum_version)
-        pum_value.setToolTip(pum_path)
-        grid.addWidget(pum_label, next_row + 1, 0)
-        grid.addWidget(pum_value, next_row + 1, 1)
+        for i, lib in enumerate(lib_versions):
+            label = QLabel(f"{lib['name']} version:")
+            label.setFont(bold_font)
+            value = QLabel(lib["version"])
+            value.setToolTip(lib["path"])
+            grid.addWidget(label, next_row + i, 0)
+            grid.addWidget(value, next_row + i, 1)
