@@ -27,6 +27,7 @@ from pathlib import Path
 
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QApplication
+from qgis.core import QgsSettingsTree
 
 from .gui.about_dialog import AboutDialog
 from .utils.tmmt_plugin_utils import TMMTPluginUtils
@@ -183,6 +184,8 @@ class TMMTPlugin:
         for action in self.actions:
             self.iface.removePluginMenu(self.main_menu_name, action)
             self.iface.removeToolBarIcon(action)
+        
+        QgsSettingsTree.unregisterPluginTreeNode("oqtopus")
 
     def show_main_dialog(self):
         conf_path = Path(__file__).parent / "default_config.yaml"
