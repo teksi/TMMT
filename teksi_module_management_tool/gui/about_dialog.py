@@ -23,9 +23,11 @@
 # ---------------------------------------------------------------------
 
 
+import os
+
 from qgis.PyQt.QtCore import QSettings
-from qgis.PyQt.QtGui import QPixmap
-from qgis.PyQt.QtWidgets import QDialog
+from qgis.PyQt.QtGui import QFont, QPixmap
+from qgis.PyQt.QtWidgets import QDialog, QLabel
 
 from teksi_module_management_tool.utils.tmmt_plugin_utils import TMMTPluginUtils
 
@@ -53,3 +55,35 @@ class AboutDialog(QDialog, DIALOG_UI):
         self.qgisMinimumVersionLabel.setText(qgisMinimumVersion)
 
         self.iconLabel.setPixmap(QPixmap(TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png")))
+
+        # --- Library versions (reuse _lib_version from bundled oqtopus) ---
+        from ..libs.oqtopus.gui.about_dialog import _lib_version
+        from ..libs.oqtopus.utils.plugin_utils import PluginUtils
+
+        oqtopus_path = PluginUtils.plugin_root_path()
+        oqtopus_version = _lib_version("oqtopus", oqtopus_path)
+
+        from ..libs import pum as _pum_pkg
+
+        pum_path = os.path.dirname(_pum_pkg.__file__)
+        pum_version = _lib_version("pum", pum_path)
+
+        bold_font = QFont()
+        bold_font.setBold(True)
+
+        grid = self.gridLayout_2
+        next_row = grid.rowCount()
+
+        oqtopus_label = QLabel("oQtopus version:")
+        oqtopus_label.setFont(bold_font)
+        oqtopus_value = QLabel(oqtopus_version)
+        oqtopus_value.setToolTip(oqtopus_path)
+        grid.addWidget(oqtopus_label, next_row, 0)
+        grid.addWidget(oqtopus_value, next_row, 1)
+
+        pum_label = QLabel("PUM version:")
+        pum_label.setFont(bold_font)
+        pum_value = QLabel(pum_version)
+        pum_value.setToolTip(pum_path)
+        grid.addWidget(pum_label, next_row + 1, 0)
+        grid.addWidget(pum_value, next_row + 1, 1)
