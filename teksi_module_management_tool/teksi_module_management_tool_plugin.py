@@ -35,10 +35,11 @@ libs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "libs"))
 if libs_path not in sys.path:
     sys.path.insert(0, libs_path)
 
-# Workaround import to avoid error (from oqtopus... module not found)
-import oqtopus  # noqa: F401, E402
-from oqtopus.gui.main_dialog import MainDialog  # noqa: E402
-from oqtopus.utils.plugin_utils import PluginUtils  # noqa: E402
+# Import oqtopus as a sub-package of TMMT via .libs so it gets its own
+# entry in sys.modules (teksi_module_management_tool.libs.oqtopus) and
+# cannot collide with a standalone oqtopus QGIS plugin.
+from .libs.oqtopus.gui.main_dialog import MainDialog  # noqa: E402
+from .libs.oqtopus.utils.plugin_utils import PluginUtils  # noqa: E402
 
 
 class TMMTPlugin:
