@@ -24,6 +24,8 @@
 
 
 
+import os
+
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QFont, QPixmap
 from qgis.PyQt.QtWidgets import QDialog, QLabel
@@ -55,10 +57,20 @@ class AboutDialog(QDialog, DIALOG_UI):
 
         self.iconLabel.setPixmap(QPixmap(TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png")))
 
-        # --- Library versions (reuse get_library_versions from bundled oqtopus) ---
-        from ..libs.oqtopus.gui.about_dialog import get_library_versions
+        # --- Library versions ---
+        from ..libs.oqtopus.gui.about_dialog import (
+            _dist_info_version,
+            get_library_version,
+        )
 
-        lib_versions = get_library_versions()
+        # oqtopus version: dist-info is in teksi_module_management_tool/libs/
+        tmmt_libs = os.path.join(TMMTPluginUtils.plugin_root_path(), "libs")
+        oqtopus_version = _dist_info_version(tmmt_libs, "oqtopus") or "?"
+        lib_versions = [
+            {"name": "oqtopus", "version": oqtopus_version, "path": os.path.join(tmmt_libs, "oqtopus")},
+            get_library_version("pum"),
+            get_library_version("pgserviceparser"),
+        ]
 
         bold_font = QFont()
         bold_font.setBold(True)
