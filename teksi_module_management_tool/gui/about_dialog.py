@@ -23,9 +23,12 @@
 # ---------------------------------------------------------------------
 
 
+
+import os
+
 from qgis.PyQt.QtCore import QSettings
-from qgis.PyQt.QtGui import QPixmap
-from qgis.PyQt.QtWidgets import QDialog
+from qgis.PyQt.QtGui import QFont, QPixmap
+from qgis.PyQt.QtWidgets import QDialog, QLabel
 
 from teksi_module_management_tool.utils.tmmt_plugin_utils import TMMTPluginUtils
 
@@ -53,3 +56,32 @@ class AboutDialog(QDialog, DIALOG_UI):
         self.qgisMinimumVersionLabel.setText(qgisMinimumVersion)
 
         self.iconLabel.setPixmap(QPixmap(TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png")))
+
+        # --- Library versions ---
+        from ..libs.oqtopus.gui.about_dialog import (
+            _dist_info_version,
+            get_library_version,
+        )
+
+        # oqtopus version: dist-info is in teksi_module_management_tool/libs/
+        tmmt_libs = os.path.join(TMMTPluginUtils.plugin_root_path(), "libs")
+        oqtopus_version = _dist_info_version(tmmt_libs, "oqtopus") or "?"
+        lib_versions = [
+            {"name": "oqtopus", "version": oqtopus_version, "path": os.path.join(tmmt_libs, "oqtopus")},
+            get_library_version("pum"),
+            get_library_version("pgserviceparser"),
+        ]
+
+        bold_font = QFont()
+        bold_font.setBold(True)
+
+        grid = self.gridLayout_2
+        next_row = grid.rowCount()
+
+        for i, lib in enumerate(lib_versions):
+            label = QLabel(f"{lib['name']} version:")
+            label.setFont(bold_font)
+            value = QLabel(lib["version"])
+            value.setToolTip(lib["path"])
+            grid.addWidget(label, next_row + i, 0)
+            grid.addWidget(value, next_row + i, 1)
