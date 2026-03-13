@@ -35,11 +35,8 @@ libs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "libs"))
 if libs_path not in sys.path:
     sys.path.insert(0, libs_path)
 
-# Workaround import to avoid error (from oqtopus... module not found)
-import oqtopus  # noqa: F401, E402
-from oqtopus.gui.main_dialog import MainDialog  # noqa: E402
-from oqtopus.utils.plugin_utils import PluginUtils  # noqa: E402
-
+from .libs.oqtopus.gui.main_dialog import MainDialog as oQtopusMainDialog # noqa: E402
+from .libs.oqtopus.utils.plugin_utils import PluginUtils as oQtopusPluginUtils  # noqa: E402
 
 class TMMTPlugin:
     """
@@ -175,7 +172,7 @@ class TMMTPlugin:
             TMMTPluginUtils.get_plugin_icon("tmmt-logo.png"),
         )
 
-        PluginUtils.init_logger(f"{PluginUtils.plugin_root_path()}/logs")
+        oQtopusPluginUtils.init_logger(f"{oQtopusPluginUtils.plugin_root_path()}/logs")
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -186,7 +183,7 @@ class TMMTPlugin:
     def show_main_dialog(self):
         conf_path = Path(__file__).parent / "default_config.yaml"
 
-        main_dialog = MainDialog(
+        main_dialog = oQtopusMainDialog(
             modules_config_path=conf_path,
             about_dialog_cls=AboutDialog,
             parent=self.iface.mainWindow(),
@@ -195,7 +192,7 @@ class TMMTPlugin:
         main_dialog.exec()
 
     def show_logs_folder(self):
-        PluginUtils.open_logs_folder()
+        oQtopusPluginUtils.open_logs_folder()
 
     def show_about_dialog(self):
         about_dialog = AboutDialog(self.iface.mainWindow())
