@@ -45,6 +45,7 @@ class TMMTPlugin(OqtopusPlugin):
             modules_config_path=config,
             about_dialog_cls=AboutDialog,
             settings_plugin_name=TMMTPluginUtils.PLUGIN_ID,
+            icon=TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png"),
         )
 
         settings = QgsSettings()
@@ -57,10 +58,3 @@ class TMMTPlugin(OqtopusPlugin):
     # noinspection PyMethodMayBeStatic
     def tr(self, source_text):
         return QApplication.translate("TMMTPlugin", source_text)
-
-    def initGui(self):
-        super().initGui()
-
-        self._get_main_menu_action().setIcon(
-            TMMTPluginUtils.get_plugin_icon("tmmt-logo.png"),
-        )
