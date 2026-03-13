@@ -38,7 +38,12 @@ class TMMTPlugin(OqtopusPlugin):
 
     def __init__(self, iface):
         config = Path(__file__).parent / "default_config.yaml"
-        super().__init__(iface, modules_config_path=config, about_dialog_cls=AboutDialog)
+        super().__init__(
+            iface,
+            modules_config_path=config,
+            about_dialog_cls=AboutDialog,
+            settings_plugin_name="tmmt",
+        )
 
         self.__version__ = TMMTPluginUtils.get_plugin_version()
         self.main_menu_name = self.tr(f"&{TMMTPluginUtils.PLUGIN_NAME}")
