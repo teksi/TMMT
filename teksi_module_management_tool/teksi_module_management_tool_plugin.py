@@ -23,6 +23,7 @@
 
 from pathlib import Path
 
+from qgis.core import QgsSettings
 from qgis.PyQt.QtWidgets import QApplication
 
 from .gui.about_dialog import AboutDialog
@@ -45,6 +46,10 @@ class TMMTPlugin(OqtopusPlugin):
             about_dialog_cls=AboutDialog,
             settings_plugin_name=TMMTPluginUtils.PLUGIN_ID,
         )
+
+        settings = QgsSettings()
+        if settings.value(f"plugins/{TMMTPluginUtils.PLUGIN_ID}/github_token") is None and settings.value(f"plugins/oqtopus/github_token") is not None:
+            settings.setValue(f"plugins/{TMMTPluginUtils.PLUGIN_ID}/github_token", settings.value(f"plugins/oqtopus/github_token"))
 
         self.__version__ = TMMTPluginUtils.get_plugin_version()
         self.main_menu_name = self.tr(f"&{TMMTPluginUtils.PLUGIN_NAME}")
