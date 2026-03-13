@@ -46,6 +46,7 @@ class TMMTPlugin(OqtopusPlugin):
             about_dialog_cls=AboutDialog,
             settings_plugin_name=TMMTPluginUtils.PLUGIN_ID,
             icon=TMMTPluginUtils.get_plugin_icon_path("tmmt-logo.png"),
+            title=TMMTPluginUtils.PLUGIN_NAME,
         )
 
         settings = QgsSettings()
