@@ -48,8 +48,8 @@ class TMMTPlugin(OqtopusPlugin):
         )
 
         settings = QgsSettings()
-        if settings.value(f"plugins/{TMMTPluginUtils.PLUGIN_ID}/github_token") is None and settings.value(f"plugins/oqtopus/github_token") is not None:
-            settings.setValue(f"plugins/{TMMTPluginUtils.PLUGIN_ID}/github_token", settings.value(f"plugins/oqtopus/github_token"))
+        if settings.value(f"plugins/{TMMTPluginUtils.PLUGIN_ID}/github-token") is None and settings.value("plugins/oqtopus/github-token") is not None:
+            settings.setValue(f"plugins/{TMMTPluginUtils.PLUGIN_ID}/github-token", settings.value("plugins/oqtopus/github-token"))
 
         self.__version__ = TMMTPluginUtils.get_plugin_version()
         self.main_menu_name = self.tr(f"&{TMMTPluginUtils.PLUGIN_NAME}")
