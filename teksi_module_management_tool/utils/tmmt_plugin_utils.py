@@ -27,6 +27,7 @@ from qgis.PyQt.uic import loadUiType
 class TMMTPluginUtils:
 
     PLUGIN_NAME = "TEKSI Module Management Tool (TMMT)"
+    PLUGIN_ID = "tmmt"
 
     @staticmethod
     def plugin_root_path():

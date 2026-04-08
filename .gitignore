@@ -1,5 +1,6 @@
 
-teksi_module_management_tool/libs/
+teksi_module_management_tool/libs/*
+!teksi_module_management_tool/libs/__init__.py
 teksi_module_management_tool/logs
 *.zip
 *.tar.gz
