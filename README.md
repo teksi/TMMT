@@ -16,6 +16,6 @@ The generic module is developped here:
   https://github.com/opengisch/oqtopus
 TMMT is a branding of oQtopus meant to ease the life of TEKSI providers.
 
-Documentation is available here :
+Additional Documentation on how to configure and use TMMT / oQtopus is available here :
 
   https://opengisch.github.io/oqtopus/
