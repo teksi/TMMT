@@ -23,7 +23,6 @@
 # ---------------------------------------------------------------------
 
 
-
 import os
 
 from qgis.PyQt.QtCore import QSettings
@@ -67,7 +66,11 @@ class AboutDialog(QDialog, DIALOG_UI):
         tmmt_libs = os.path.join(TMMTPluginUtils.plugin_root_path(), "libs")
         oqtopus_version = _dist_info_version(tmmt_libs, "oqtopus") or "?"
         lib_versions = [
-            {"name": "oqtopus", "version": oqtopus_version, "path": os.path.join(tmmt_libs, "oqtopus")},
+            {
+                "name": "oqtopus",
+                "version": oqtopus_version,
+                "path": os.path.join(tmmt_libs, "oqtopus"),
+            },
             get_library_version("pum"),
             get_library_version("pgserviceparser"),
         ]
