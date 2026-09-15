@@ -41,7 +41,10 @@ class TMMTPluginUtils:
         plugin_basename = TMMTPluginUtils.plugin_root_path().split(os.sep)[-1]
 
         plugin_temp_dir = os.path.join(
-            QStandardPaths.writableLocation(QStandardPaths.TempLocation), plugin_basename
+            QStandardPaths.StandardLocation.writableLocation(
+                QStandardPaths.StandardLocation.TempLocation
+            ),
+            plugin_basename,
         )
         if not os.path.exists(plugin_temp_dir):
             os.makedirs(plugin_temp_dir)
