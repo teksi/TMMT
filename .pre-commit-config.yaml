@@ -2,7 +2,7 @@ repos:
 
   # Fix end of files
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: .*\.qgs
@@ -15,7 +15,7 @@ repos:
 
   # Remove unused imports/variables
   - repo: https://github.com/PyCQA/autoflake
-    rev: v2.3.1
+    rev: v2.4.0
     hooks:
       - id: autoflake
         args:
@@ -25,14 +25,14 @@ repos:
 
   # Sort imports
   - repo: https://github.com/pycqa/isort
-    rev: "6.0.1"
+    rev: "9.0.2"
     hooks:
       - id: isort
         args: ["--profile", "black"]
 
   # Black formatting
-  - repo: https://github.com/psf/black
-    rev: "25.1.0"
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: "26.10.0"
     hooks:
       - id: black
         args: ["--line-length=99"]
@@ -59,7 +59,7 @@ repos:
 
   # Lint files
   - repo: https://github.com/pycqa/flake8
-    rev: "7.2.0"
+    rev: "7.4.1"
     hooks:
       - id: flake8
         args: [
